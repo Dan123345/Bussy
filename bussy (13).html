@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bussy — перевезення у три кліки</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ffc900'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='18' fill='%230f0f0f'%3EB%3C/text%3E%3C/svg%3E">
+<script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","w16mkipso6");</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-V1E398R9PN"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-V1E398R9PN');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--y:#ffc900;--yl:#fffaeb;--yd:#e6b400;--blk:#0f0f0f;--bg:#f7f7f7;--card:#fff;--line:#ebebeb;--t2:#888;--t3:#bbb;--r:20px;--rs:13px}
+html{scroll-behavior:smooth}
+
+/* ══ MOBILE FIRST (default) ══ */
+body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--blk);max-width:430px;margin:0 auto;min-height:100vh;-webkit-font-smoothing:antialiased}
+/* NAV */
+nav{position:sticky;top:0;z-index:300;background:var(--card);padding:13px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.logo{text-decoration:none;color:var(--blk)}
+.logo-name{font-family:'Unbounded',sans-serif;font-weight:900;font-size:19px;letter-spacing:-.5px;line-height:1}
+.logo-name em{color:var(--y);font-style:normal}
+.logo-sub{font-size:10px;color:var(--t2);margin-top:1px;font-weight:500}
+.nav-link{font-size:12px;font-weight:600;color:var(--t2);text-decoration:none}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-phone{font-size:12px;font-weight:700;color:var(--t2);text-decoration:none;white-space:nowrap}
+/* HERO */
+.hero{background:var(--card);padding:18px 20px 20px;border-bottom:1px solid var(--line)}
+.hero h1{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:900;line-height:1.25;letter-spacing:-.3px}
+.hero h1 em{font-style:normal;background:var(--y);padding:0 4px 1px;border-radius:4px}
+/* TICKER */
+.ticker{position:sticky;top:56px;z-index:200;background:var(--y);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--yd)}
+.ticker-left{display:flex;flex-direction:column;gap:3px}
+.ticker-lbl{font-family:'Unbounded',sans-serif;font-size:14px;color:var(--blk);font-weight:900;letter-spacing:-.3px}
+.ticker-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.ticker-val{font-family:'Unbounded',sans-serif;font-size:26px;font-weight:900;color:var(--blk);transition:transform .2s cubic-bezier(.34,1.56,.64,1);line-height:1;font-variant-emoji:text}
+.ticker-val.pop{transform:scale(1.1)}
+.ticker-beta{font-size:9px;color:rgba(0,0,0,.4);font-weight:600;letter-spacing:.3px}
+/* SECTION */
+.sec{background:var(--card);border-radius:var(--r);margin:10px 12px 0;overflow:hidden}
+.sec-head{display:flex;align-items:center;gap:10px;padding:16px 16px 0;margin-bottom:14px}
+.snum{width:24px;height:24px;border-radius:50%;background:var(--y);font-family:'Unbounded',sans-serif;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,color .2s}
+.snum.done{background:var(--blk);color:var(--y)}
+.sec-ttl{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700}
+.sec-tag{margin-left:auto;font-size:11px;font-weight:700;color:var(--t2);background:var(--bg);padding:3px 9px;border-radius:100px;display:none;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis}
+.sec-tag.vis{display:block}
+.sec-body{padding:0 16px 16px}
+/* SERVICE GRID */
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.svc{background:var(--bg);border:1.5px solid transparent;border-radius:var(--rs);padding:14px 12px 12px;cursor:pointer;transition:border-color .15s,background .15s,transform .1s;position:relative;-webkit-tap-highlight-color:transparent}
+.svc:active{transform:scale(.96)}
+.svc.on{background:var(--yl);border-color:var(--y)}
+.svc-ck{position:absolute;top:8px;right:8px;width:17px;height:17px;background:var(--y);border-radius:50%;font-size:9px;font-weight:900;display:none;align-items:center;justify-content:center}
+.svc.on .svc-ck{display:flex}
+.svc-ico{font-size:24px;display:block;margin-bottom:6px}
+.svc-nm{font-size:12px;font-weight:700;line-height:1.3}
+.svc-pr{font-size:11px;color:var(--t2);font-weight:600;margin-top:2px}
+.svc.on .svc-pr{color:var(--yd)}
+/* INLINE SUB-PANEL */
+.svc-sub-wrap{grid-column:1/-1;display:none}
+.sub-panel{background:var(--bg);border-radius:var(--rs);padding:12px;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.sub-label{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px}
+.sub-chips{display:flex;flex-direction:column;gap:6px}
+.sub-chip{background:var(--card);border:1.5px solid var(--line);border-radius:var(--rs);padding:10px 13px;cursor:pointer;transition:all .15s;display:flex;justify-content:space-between;align-items:center;-webkit-tap-highlight-color:transparent}
+.sub-chip:hover{background:var(--yl);border-color:var(--y)}
+.sub-chip.on{background:var(--y);border-color:var(--yd)}
+.sub-chip-name{font-size:13px;font-weight:700}
+.sub-chip-desc{font-size:10px;color:var(--t2);margin-top:2px}
+.sub-chip.on .sub-chip-desc{color:rgba(0,0,0,.5)}
+.sub-chip-price{font-size:13px;font-weight:700;color:var(--t2);white-space:nowrap;margin-left:8px}
+.sub-chip.on .sub-chip-price{color:var(--blk)}
+/* ROUTE */
+.route-wrap{border:1.5px solid var(--line);border-radius:var(--rs);overflow:visible}
+.r-row{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--card);position:relative}
+.r-row:first-child{border-radius:var(--rs) var(--rs) 0 0}
+.r-row+.r-row{border-top:1.5px solid var(--line)}
+.r-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.r-dot.a{background:var(--blk)}
+.r-dot.b{background:var(--y);border:2px solid var(--blk)}
+.ac-wrap{position:relative;flex:1}
+.ac-wrap input{width:100%;border:none;outline:none;font-family:'Manrope',sans-serif;font-size:14px;background:transparent;color:var(--blk);font-weight:500}
+.ac-wrap input::placeholder{color:var(--t3);font-weight:400}
+.ac-drop{position:absolute;left:-14px;right:-14px;top:calc(100% + 8px);background:var(--card);border:1.5px solid var(--line);border-radius:var(--rs);z-index:500;box-shadow:0 8px 24px rgba(0,0,0,.1);overflow:hidden;display:none}
+.ac-drop.open{display:block}
+.ac-item{padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--line);transition:background .1s;display:flex;gap:8px;align-items:flex-start}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover{background:var(--yl)}
+.ac-ico{font-size:13px;flex-shrink:0;margin-top:1px}
+.ac-main{font-weight:600;font-size:12px}
+.ac-sub{font-size:10px;color:var(--t2);margin-top:1px}
+.swap-btn{width:100%;border:none;background:none;border-top:1.5px solid var(--line);padding:10px;font-family:'Manrope',sans-serif;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:background .15s}
+.swap-btn:hover{background:var(--bg)}
+.dist-badge{display:none;align-items:center;gap:6px;background:var(--yl);border-top:1.5px solid var(--y);padding:9px 14px;font-size:12px;font-weight:600;color:var(--blk)}
+.dist-badge.vis{display:flex}
+.dist-km{color:var(--yd);font-weight:800}
+/* EXTRAS */
+.ext-list{display:flex;flex-direction:column}
+.ext-item{border-bottom:1px solid var(--line);overflow:hidden}
+.ext-item:last-child{border-bottom:none}
+.ext-row{display:flex;align-items:center;gap:12px;padding:13px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ext-ico{font-size:20px;flex-shrink:0;width:28px;text-align:center}
+.ext-info{flex:1}
+.ext-nm{font-size:13px;font-weight:700}
+.ext-pr-lbl{font-size:11px;color:var(--t2);margin-top:1px}
+.ext-toggle{width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;transition:background .2s;flex-shrink:0}
+.ext-toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.15);transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
+.ext-item.on .ext-toggle{background:var(--y)}
+.ext-item.on .ext-toggle::after{transform:translateX(18px)}
+.ext-opts{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease}
+.ext-opts.open{max-height:300px;padding-bottom:14px}
+.opts-label{font-size:11px;color:var(--t2);font-weight:600;margin-bottom:8px}
+.opts-hint{font-size:10px;color:var(--t3);margin-bottom:8px;font-style:italic;line-height:1.5}
+.scroll-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.scroll-strip::-webkit-scrollbar{display:none}
+.scroll-chip{flex-shrink:0;background:var(--bg);border:1.5px solid transparent;border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.scroll-chip:hover{background:var(--yl)}
+.scroll-chip.on{background:var(--y);border-color:var(--yd)}
+/* FLOOR RANGE */
+.floor-track{margin-top:2px}
+.floor-display{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.floor-num{font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900}
+.floor-num small{font-size:12px;font-weight:600;color:var(--t2);margin-left:4px;font-family:'Manrope',sans-serif}
+.floor-price{font-size:13px;font-weight:700;color:var(--yd)}
+input[type=range].rng{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:var(--line);outline:none}
+input[type=range].rng::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--y);border:3px solid var(--blk);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+input[type=range].rng::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--y);border:3px solid var(--blk);cursor:pointer}
+/* DATE */
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.month-nav-ttl{font-size:12px;font-weight:700;color:var(--t2)}
+.month-arr{background:none;border:none;font-size:14px;color:var(--t2);cursor:pointer;padding:2px 6px;border-radius:6px;transition:color .15s,background .15s;font-family:inherit}
+.month-arr:hover{background:var(--yl);color:var(--blk)}
+.date-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.date-strip::-webkit-scrollbar{display:none}
+.date-card{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:54px;border-radius:12px;background:var(--bg);border:1.5px solid transparent;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.date-card:hover:not(.past){background:var(--yl)}
+.date-card.today{border-color:var(--yd)}
+.date-card.sel{background:var(--y);border-color:var(--yd)}
+.date-card.past{opacity:.3;cursor:default}
+.dc-wd{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.3px}
+.date-card.sel .dc-wd{color:rgba(0,0,0,.5)}
+.date-card.today .dc-wd{color:var(--yd)}
+.dc-d{font-size:16px;font-weight:800;color:var(--blk);margin-top:3px;line-height:1}
+.time-section{margin-top:14px}
+.time-lbl{font-size:10px;font-weight:700;color:var(--t2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px}
+.time-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.time-scroll::-webkit-scrollbar{display:none}
+.time-chip{flex-shrink:0;background:var(--bg);border:1.5px solid transparent;border-radius:100px;padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.time-chip:hover{background:var(--yl)}
+.time-chip.on{background:var(--y);border-color:var(--yd)}
+/* BREAKDOWN */
+.breakdown{background:var(--card);border-radius:var(--r);border:1.5px solid var(--line);margin:10px 12px 0;padding:16px;display:none}
+.breakdown.vis{display:block;animation:su .3s ease}
+@keyframes su{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.bd-ttl{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:10px}
+.bd-row{display:flex;justify-content:space-between;font-size:13px;color:var(--t2);padding:6px 0;border-bottom:1px solid var(--line)}
+.bd-row:last-child{border:none}
+.bd-total{display:flex;justify-content:space-between;font-size:15px;font-weight:800;color:var(--blk);padding-top:10px;margin-top:4px;border-top:2px solid var(--blk)!important}
+/* CONTACT */
+.contact-sec{background:var(--card);border-radius:var(--r);margin:10px 12px 0;padding:18px}
+.ct-ttl{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;margin-bottom:3px}
+.ct-sub{font-size:12px;color:var(--t2);margin-bottom:16px;line-height:1.5}
+.inp{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:var(--rs);font-family:'Manrope',sans-serif;font-size:14px;outline:none;background:var(--bg);transition:border .2s,background .2s;margin-bottom:9px}
+.inp:focus{border-color:var(--y);background:var(--card)}
+.inp.err{border-color:#e74c3c;background:#fff8f8}
+.btn-call{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;background:var(--y);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;padding:16px;border-radius:100px;border:none;cursor:pointer;transition:transform .15s,background .15s;position:relative}
+.btn-call:active{transform:scale(.97);background:var(--yd)}
+.btn-call:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.call-ico{font-size:17px;animation:rng 3s 1.5s infinite}
+@keyframes rng{0%,100%{transform:rotate(0)}8%{transform:rotate(-18deg)}16%{transform:rotate(18deg)}24%{transform:rotate(0)}}
+.btn-loading::after{content:'';position:absolute;right:18px;top:50%;transform:translateY(-50%);width:16px;height:16px;border:2px solid rgba(0,0,0,.2);border-top-color:var(--blk);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:translateY(-50%) rotate(360deg)}}
+/* HOW */
+.how-sec{background:var(--card);border-radius:var(--r);margin:10px 12px 0;padding:18px}
+.how-ttl{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;margin-bottom:16px}
+/* мобілка — вертикальні кроки */
+.how-steps-wrap{display:block}
+.how-step{display:flex;gap:14px}
+.how-step:not(:last-child) .hsl::after{content:'';display:block;width:1.5px;min-height:16px;background:var(--line);margin:4px auto 0}
+.hsl{display:flex;flex-direction:column;align-items:center;width:26px;flex-shrink:0}
+.hnum{width:26px;height:26px;background:var(--y);border-radius:50%;font-family:'Unbounded',sans-serif;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.hcnt{padding:3px 0 16px}
+.hcnt h3{font-size:13px;font-weight:700;margin-bottom:2px}
+.hcnt p{font-size:12px;color:var(--t2);line-height:1.5}
+/* FOOTER */
+footer{background:var(--blk);color:#fff;margin:10px 12px 24px;border-radius:var(--r);padding:20px 18px}
+.ft-logo{font-family:'Unbounded',sans-serif;font-weight:900;font-size:17px;letter-spacing:-.5px;margin-bottom:2px}
+.ft-logo em{color:var(--y);font-style:normal}
+.ft-sub{font-size:11px;color:rgba(255,255,255,.25);margin-bottom:16px}
+.ft-links{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.ft-link{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-size:13px;font-weight:500}
+.ft-ico{width:32px;height:32px;background:rgba(255,255,255,.06);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.ft-copy{font-size:10px;color:rgba(255,255,255,.16);padding-top:13px;border-top:1px solid rgba(255,255,255,.06)}
+/* POPUP */
+.popup-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.popup-overlay.open{opacity:1;pointer-events:all}
+.popup{background:var(--card);border-radius:24px;padding:28px 22px 24px;width:100%;max-width:380px;transform:scale(.9) translateY(20px);transition:transform .3s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto}
+.popup-overlay.open .popup{transform:scale(1) translateY(0)}
+.popup-top{text-align:center;margin-bottom:20px}
+.popup-ico{font-size:44px;margin-bottom:12px}
+.popup-ttl{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:900;margin-bottom:6px;line-height:1.2}
+.popup-order-num{font-size:12px;font-weight:700;color:var(--t2);background:var(--bg);padding:4px 12px;border-radius:100px;display:inline-block;margin-bottom:4px}
+.popup-details{background:var(--bg);border-radius:var(--rs);padding:14px;margin-bottom:16px}
+.popup-det-ttl{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
+.popup-det-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--line)}
+.popup-det-row:last-child{border:none}
+.popup-det-row span:last-child{font-weight:600;color:var(--blk);text-align:right;max-width:60%}
+.popup-total-row{display:flex;justify-content:space-between;font-size:15px;font-weight:800;padding:10px 14px;background:var(--y);border-radius:var(--rs);margin-bottom:16px}
+.popup-btn{display:block;width:100%;background:var(--blk);color:#fff;font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;padding:15px;border-radius:100px;border:none;cursor:pointer;transition:background .15s}
+.popup-btn:hover{background:#333}
+/* DESKTOP — одна колонка, просто ширше */
+.desktop-shell{display:block}
+.desktop-right{display:none!important}
+.desktop-phone{display:block}
+@media(min-width:900px){
+  body{max-width:100%;background:var(--bg)}
+
+  /* обгортка всього контенту — одна колонка по центру */
+  .desktop-shell{max-width:860px;margin:0 auto}
+  .desktop-phone{display:block}
+
+  /* nav */
+  nav{padding:16px 32px}
+  .logo-name{font-size:22px}
+  .logo-sub{font-size:11px}
+  .nav-link{font-size:13px}
+
+  /* hero */
+  .hero{padding:36px 32px}
+  .hero h1{font-size:32px}
+
+  /* ticker */
+  .ticker{top:57px;padding:14px 32px}
+  .ticker-lbl{font-size:16px}
+  .ticker-val{font-size:34px}
+
+  /* секції — більші відступи */
+  .sec{margin:16px 0 0;border-radius:20px}
+  .sec-head{padding:24px 28px 0;margin-bottom:18px}
+  .snum{width:28px;height:28px;font-size:11px}
+  .sec-ttl{font-size:15px}
+  .sec-body{padding:0 28px 28px}
+
+  /* сервіси — 3 в ряд замість 2 */
+  .svc-grid{grid-template-columns:repeat(3,1fr);gap:10px}
+  .svc{padding:18px 16px 14px}
+  .svc-ico{font-size:28px;margin-bottom:8px}
+  .svc-nm{font-size:13px}
+  .svc-pr{font-size:12px}
+  .sub-chip-name{font-size:14px}
+  .sub-chip-desc{font-size:11px}
+  .sub-chip-price{font-size:14px}
+  .sub-chip{padding:12px 16px}
+
+  /* маршрут */
+  .r-row{padding:15px 18px}
+  .ac-wrap input{font-size:15px}
+  .dist-badge{padding:12px 18px;font-size:13px}
+
+  /* extras */
+  .ext-row{padding:16px 0}
+  .ext-nm{font-size:14px}
+  .ext-pr-lbl{font-size:12px}
+  .ext-ico{font-size:22px;width:32px}
+  .ext-toggle{width:50px;height:28px;border-radius:14px}
+  .ext-toggle::after{width:22px;height:22px}
+  .ext-item.on .ext-toggle::after{transform:translateX(22px)}
+  .scroll-chip{padding:9px 18px;font-size:13px}
+
+  /* date */
+  .date-card{width:52px;height:62px;border-radius:14px}
+  .dc-d{font-size:18px}
+  .time-chip{padding:9px 18px;font-size:13px}
+
+  /* breakdown */
+  .breakdown{margin:16px 0 0;padding:22px 28px;border-radius:20px}
+  .bd-row{font-size:14px;padding:9px 0}
+  .bd-total{font-size:16px}
+
+  /* contact */
+  .contact-sec{margin:16px 0 0;padding:28px 28px;border-radius:20px}
+  .ct-ttl{font-size:15px}
+  .ct-sub{font-size:13px}
+  .inp{padding:15px 18px;font-size:15px;border-radius:14px}
+  .btn-call{font-size:14px;padding:18px;border-radius:100px}
+
+  /* how */
+  .how-sec{margin:16px 0 0;padding:28px 28px;border-radius:20px}
+  .how-ttl{font-size:15px;margin-bottom:20px}
+  /* горизонтальні кроки на десктопі */
+  .how-steps-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:0;position:relative}
+  .how-steps-wrap::before{content:'';position:absolute;top:16px;left:calc(16.66% + 8px);right:calc(16.66% + 8px);height:1.5px;background:var(--line)}
+  .how-step{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 16px}
+  .how-step:not(:last-child) .hsl::after{display:none}
+  .hsl{justify-content:center;width:auto;margin-bottom:14px}
+  .hnum{width:32px;height:32px;font-size:11px;position:relative;z-index:1}
+  .hcnt{padding:0}
+  .hcnt h3{font-size:14px;margin-bottom:6px}
+  .hcnt p{font-size:12px}
+
+  /* footer */
+  footer{margin:16px 0 32px;padding:28px 32px;border-radius:20px}
+  .ft-logo{font-size:20px}
+  .ft-links{flex-direction:row;gap:24px}
+  .ft-link{font-size:14px}
+}
+@media(max-width:390px){
+  .hero h1{font-size:17px}
+  .ticker-val{font-size:22px}
+}
+
+</style>
+</head>
+<body>
+<div class="desktop-shell">
+<div class="desktop-phone">
+
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-name">Bu<em>ss</em>y</div>
+    <div class="logo-sub">перевезення у три кліки</div>
+  </a>
+  <div class="nav-right">
+    <a href="tel:+380665179774" class="nav-phone" onclick="if(typeof gtag!=='undefined'){gtag('event','phone_click',{location:'header'});}setTimeout(()=>{window.location.href='tel:+380665179774';},150);return false;">+38 (066) 517-97-74</a>
+    <a href="#how" class="nav-link" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'});return false;">Як це працює</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Вантажні перевезення<br>у <em>Вінниці</em></h1>
+</div>
+
+<div class="ticker">
+  <div class="ticker-left">
+    <div class="ticker-lbl">Вартість</div>
+    <div class="ticker-beta">beta версія</div>
+  </div>
+  <div class="ticker-right">
+    <div class="ticker-val" id="tVal">0 ₴</div>
+  </div>
+</div>
+
+<!-- 1. SERVICES -->
+<div class="sec" id="s1">
+  <div class="sec-head">
+    <div class="snum" id="sn1">1</div>
+    <div class="sec-ttl">Оберіть послугу</div>
+    <div class="sec-tag" id="st1"></div>
+  </div>
+  <div class="sec-body">
+    <div class="svc-grid" id="svcGrid">
+
+      <div class="svc" id="svc-garbage" onclick="selectSvc(event,'garbage')">
+        <div class="svc-ck">✓</div><span class="svc-ico">🗑️</span>
+        <div class="svc-nm">Вивіз сміття</div><div class="svc-pr">350 ₴</div>
+      </div>
+
+      <div class="svc" id="svc-appliances" onclick="selectSvc(event,'appliances')">
+        <div class="svc-ck">✓</div><span class="svc-ico">📺</span>
+        <div class="svc-nm">Побутова техніка</div><div class="svc-pr">450 ₴</div>
+      </div>
+
+      <div class="svc" id="svc-furniture" onclick="selectSvc(event,'furniture')">
+        <div class="svc-ck">✓</div><span class="svc-ico">🛋️</span>
+        <div class="svc-nm">Перевезення меблів</div><div class="svc-pr">від 400 ₴</div>
+      </div>
+
+      <div class="svc" id="svc-construction" onclick="selectSvc(event,'construction')">
+        <div class="svc-ck">✓</div><span class="svc-ico">🧱</span>
+        <div class="svc-nm">Будматеріали</div><div class="svc-pr">від 400 ₴</div>
+      </div>
+
+      <!-- Sub меблі — відкривається одразу під цим рядком -->
+      <div class="svc-sub-wrap" id="sub-furniture-wrap">
+        <div class="sub-panel" id="sub-furniture">
+          <div class="sub-label">Оберіть розмір</div>
+          <div class="sub-chips">
+            <div class="sub-chip" onclick="selectSub('furniture','S',400,20)">
+              <div><div class="sub-chip-name">Меблі S</div><div class="sub-chip-desc">Стільці, тумби, полиці</div></div>
+              <div class="sub-chip-price">400 ₴</div>
+            </div>
+            <div class="sub-chip" onclick="selectSub('furniture','M',550,22)">
+              <div><div class="sub-chip-name">Меблі M</div><div class="sub-chip-desc">Ліжко, шафа, стіл</div></div>
+              <div class="sub-chip-price">550 ₴</div>
+            </div>
+            <div class="sub-chip" onclick="selectSub('furniture','L',750,24)">
+              <div><div class="sub-chip-name">Меблі L</div><div class="sub-chip-desc">Диван, піаніно, великогабарит</div></div>
+              <div class="sub-chip-price">750 ₴</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub будматеріали -->
+      <div class="svc-sub-wrap" id="sub-construction-wrap">
+        <div class="sub-panel" id="sub-construction">
+          <div class="sub-label">Оберіть тип</div>
+          <div class="sub-chips">
+            <div class="sub-chip" onclick="selectSub('construction','S',400,18)">
+              <div><div class="sub-chip-name">Будматеріали S</div><div class="sub-chip-desc">Цемент, інструменти, мішки</div></div>
+              <div class="sub-chip-price">400 ₴</div>
+            </div>
+            <div class="sub-chip" onclick="selectSub('construction','M',550,20)">
+              <div><div class="sub-chip-name">Будматеріали M</div><div class="sub-chip-desc">Фанера, МДФ, труби</div></div>
+              <div class="sub-chip-price">550 ₴</div>
+            </div>
+            <div class="sub-chip" onclick="selectSub('construction','L',750,22)">
+              <div><div class="sub-chip-name">Будматеріали L</div><div class="sub-chip-desc">Плити, балки, довгомір</div></div>
+              <div class="sub-chip-price">750 ₴</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="svc" id="svc-apartment" onclick="selectSvc(event,'apartment')">
+        <div class="svc-ck">✓</div><span class="svc-ico">🏠</span>
+        <div class="svc-nm">Квартирний переїзд</div><div class="svc-pr">від 800 ₴</div>
+      </div>
+
+      <div class="svc" id="svc-commercial" onclick="selectSvc(event,'commercial')">
+        <div class="svc-ck">✓</div><span class="svc-ico">🏢</span>
+        <div class="svc-nm">Комерційні перевезення</div><div class="svc-pr">від 550 ₴</div>
+      </div>
+
+      <!-- Sub переїзд -->
+      <div class="svc-sub-wrap" id="sub-apartment-wrap">
+        <div class="sub-panel" id="sub-apartment">
+          <div class="sub-label">Скільки кімнат?</div>
+          <div class="sub-chips">
+            <div class="sub-chip" onclick="selectSub('apartment','1-2',800,25)">
+              <div><div class="sub-chip-name">1–2 кімнати</div><div class="sub-chip-desc">≈ 2–3 год роботи</div></div>
+              <div class="sub-chip-price">800 ₴</div>
+            </div>
+            <div class="sub-chip" onclick="selectSub('apartment','3-4',1100,25)">
+              <div><div class="sub-chip-name">3–4 кімнати</div><div class="sub-chip-desc">≈ 4–5 год роботи</div></div>
+              <div class="sub-chip-price">1 100 ₴</div>
+            </div>
+            <div class="sub-chip" onclick="selectSub('apartment','5+',1500,25)">
+              <div><div class="sub-chip-name">5+ кімнат</div><div class="sub-chip-desc">≈ 6–8 год роботи</div></div>
+              <div class="sub-chip-price">1 500 ₴</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub комерційні -->
+      <div class="svc-sub-wrap" id="sub-commercial-wrap">
+        <div class="sub-panel" id="sub-commercial">
+          <div class="sub-label">Орієнтовна вага</div>
+          <div class="sub-chips">
+            <div class="sub-chip" onclick="selectSub('commercial','до 500 кг',550,20)">
+              <div><div class="sub-chip-name">До 500 кг</div><div class="sub-chip-desc">Офісне обладнання, дрібний вантаж</div></div>
+              <div class="sub-chip-price">550 ₴</div>
+            </div>
+            <div class="sub-chip" onclick="selectSub('commercial','до 2 т',750,22)">
+              <div><div class="sub-chip-name">До 2 т</div><div class="sub-chip-desc">Паллети, виробниче обладнання</div></div>
+              <div class="sub-chip-price">750 ₴</div>
+            </div>
+            <div class="sub-chip" onclick="selectSub('commercial','до 4 т',1000,25)">
+              <div><div class="sub-chip-name">До 4 т</div><div class="sub-chip-desc">Великий промисловий вантаж</div></div>
+              <div class="sub-chip-price">1 000 ₴</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 2. ROUTE -->
+<div class="sec" id="s2">
+  <div class="sec-head">
+    <div class="snum" id="sn2">2</div>
+    <div class="sec-ttl">Маршрут</div>
+    <div class="sec-tag" id="st2"></div>
+  </div>
+  <div class="sec-body">
+    <div class="route-wrap">
+      <div class="r-row">
+        <div class="r-dot a"></div>
+        <div class="ac-wrap">
+          <input type="text" id="fromIn" placeholder="Звідки забираємо?" autocomplete="off">
+          <div class="ac-drop" id="acFrom"></div>
+        </div>
+      </div>
+      <div class="r-row">
+        <div class="r-dot b"></div>
+        <div class="ac-wrap">
+          <input type="text" id="toIn" placeholder="Куди везти?" autocomplete="off">
+          <div class="ac-drop" id="acTo"></div>
+        </div>
+      </div>
+      <div class="dist-badge" id="distBadge">
+        🛣️ <span class="dist-km" id="distKm">—</span> км · <span id="distPrice">—</span> ₴ за маршрут
+      </div>
+      <button class="swap-btn" onclick="swapRoute()">⇅ Поміняти адреси</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. EXTRAS -->
+<div class="sec" id="s3">
+  <div class="sec-head">
+    <div class="snum" id="sn3">3</div>
+    <div class="sec-ttl">Додаткові послуги</div>
+    <div class="sec-tag" id="st3"></div>
+  </div>
+  <div class="sec-body">
+    <div class="ext-list">
+      <div class="ext-item" id="ex0">
+        <div class="ext-row" onclick="toggleExt(0)">
+          <span class="ext-ico">💪</span>
+          <div class="ext-info"><div class="ext-nm">Вантажник</div><div class="ext-pr-lbl" id="ep0">200 ₴/год</div></div>
+          <div class="ext-toggle"></div>
+        </div>
+        <div class="ext-opts" id="eo0">
+          <div class="opts-hint">1–2 год — невелике перевезення. 3–4 год — переїзд квартири.</div>
+          <div class="opts-label">Кількість годин</div>
+          <div class="scroll-strip" id="workerStrip"></div>
+        </div>
+      </div>
+      <div class="ext-item" id="ex1">
+        <div class="ext-row" onclick="toggleExt(1)">
+          <span class="ext-ico">📦</span>
+          <div class="ext-info"><div class="ext-nm">Пакувальник</div><div class="ext-pr-lbl" id="ep1">300 ₴ — фіксована ціна</div></div>
+          <div class="ext-toggle"></div>
+        </div>
+      </div>
+      <div class="ext-item" id="ex2">
+        <div class="ext-row" onclick="toggleExt(2)">
+          <span class="ext-ico">🏗️</span>
+          <div class="ext-info"><div class="ext-nm">Підйом на поверх</div><div class="ext-pr-lbl" id="ep2">60 ₴/поверх</div></div>
+          <div class="ext-toggle"></div>
+        </div>
+        <div class="ext-opts" id="eo2">
+          <div class="opts-label">Оберіть поверх</div>
+          <div class="floor-track">
+            <div class="floor-display">
+              <div class="floor-num" id="floorNum">2<small>-й поверх</small></div>
+              <div class="floor-price" id="floorPrice">120 ₴</div>
+            </div>
+            <input type="range" class="rng" id="floorRange" min="1" max="21" value="2" oninput="updateFloor(this.value)">
+          </div>
+        </div>
+      </div>
+      <div class="ext-item" id="ex3">
+        <div class="ext-row" onclick="toggleExt(3)">
+          <span class="ext-ico">🔧</span>
+          <div class="ext-info"><div class="ext-nm">Розбирання меблів</div><div class="ext-pr-lbl" id="ep3">300 ₴ — фіксована ціна</div></div>
+          <div class="ext-toggle"></div>
+        </div>
+      </div>
+      <div class="ext-item" id="ex4">
+        <div class="ext-row" onclick="toggleExt(4)">
+          <span class="ext-ico">🏬</span>
+          <div class="ext-info"><div class="ext-nm">Тимчасовий склад</div><div class="ext-pr-lbl" id="ep4">250 ₴/день · до 5 м²</div></div>
+          <div class="ext-toggle"></div>
+        </div>
+        <div class="ext-opts" id="eo4">
+          <div class="opts-label">Кількість днів</div>
+          <div class="scroll-strip" id="storeDaysStrip"></div>
+          <div class="opts-label" style="margin-top:12px">Площа зберігання</div>
+          <div class="scroll-strip" id="storeAreaStrip"></div>
+        </div>
+      </div>
+      <div class="ext-item" id="ex5">
+        <div class="ext-row" onclick="toggleExt(5)">
+          <span class="ext-ico">🧹</span>
+          <div class="ext-info"><div class="ext-nm">Прибирання після</div><div class="ext-pr-lbl" id="ep5">200 ₴/год</div></div>
+          <div class="ext-toggle"></div>
+        </div>
+        <div class="ext-opts" id="eo5">
+          <div class="opts-hint">1 год — 1 кімната. 2–3 год — повна квартира.</div>
+          <div class="opts-label">Кількість годин</div>
+          <div class="scroll-strip" id="cleanStrip"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. DATE + TIME -->
+<div class="sec" id="s4">
+  <div class="sec-head">
+    <div class="snum" id="sn4">4</div>
+    <div class="sec-ttl">Дата та час</div>
+    <div class="sec-tag" id="st4"></div>
+  </div>
+  <div class="sec-body">
+    <div class="month-nav">
+      <button class="month-arr" onclick="chMon(-1)">‹</button>
+      <div class="month-nav-ttl" id="calTtl"></div>
+      <button class="month-arr" onclick="chMon(1)">›</button>
+    </div>
+    <div class="date-strip" id="dateStrip"></div>
+    <div class="time-section">
+      <div class="time-lbl">Час подачі авто</div>
+      <div class="time-scroll" id="timeGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BREAKDOWN -->
+<div class="breakdown" id="breakdown">
+  <div class="bd-ttl">Деталі розрахунку</div>
+  <div id="bdRows"></div>
+  <div class="bd-total" id="bdTotal" style="display:none">
+    <span>Разом</span><span id="bdTotalVal"></span>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="contact-sec">
+  <div class="ct-ttl">Підтвердити замовлення</div>
+  <div class="ct-sub">Залиште дані — наш логіст підтвердить замовлення у телефонному дзвінку.</div>
+  <input type="text" class="inp" id="nameInp" placeholder="Ваше ім'я">
+  <input type="tel" class="inp" id="phoneInp" placeholder="+380 00 000 00 00">
+  <button class="btn-call" id="submitBtn" onclick="submitOrder()">
+    <span class="call-ico">📞</span>Підтвердити замовлення
+  </button>
+</div>
+
+<!-- HOW -->
+<div class="how-sec" id="how">
+  <div class="how-ttl">Як це працює</div>
+  <div class="how-steps-wrap">
+    <div class="how-step">
+      <div class="hsl"><div class="hnum">1</div></div>
+      <div class="hcnt"><h3>Розрахуйте вартість</h3><p>Оберіть послугу, вкажіть адреси та опції. Ціна оновлюється миттєво.</p></div>
+    </div>
+    <div class="how-step">
+      <div class="hsl"><div class="hnum">2</div></div>
+      <div class="hcnt"><h3>Логіст вам передзвонить</h3><p>Для підтвердження замовлення.</p></div>
+    </div>
+    <div class="how-step">
+      <div class="hsl"><div class="hnum">3</div></div>
+      <div class="hcnt"><h3>Виконуємо замовлення</h3><p>Приїдемо у призначений час. Оплата після виконання.</p></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="ft-logo">Bu<em>ss</em>y</div>
+  <div class="ft-sub">Вантажні перевезення у Вінниці та області</div>
+  <div class="ft-links">
+    <a href="tel:+380665179774" class="ft-link" onclick="if(typeof gtag!=='undefined'){gtag('event','phone_click',{location:'footer'});}setTimeout(()=>{window.location.href='tel:+380665179774';},150);return false;"><div class="ft-ico">📞</div>+38 (066) 517-97-74</a>
+    <a href="#" class="ft-link"><div class="ft-ico">📍</div>Вінниця, Україна</a>
+    <a href="#" class="ft-link"><div class="ft-ico">🕐</div>Щодня 8:00 — 19:00</a>
+  </div>
+  <div class="ft-copy">© 2025 Bussy. Всі права захищені.</div>
+</footer>
+
+
+<!-- POPUP -->
+<div class="popup-overlay" id="popup">
+  <div class="popup">
+    <div class="popup-top">
+      <div class="popup-ico">🎉</div>
+      <div class="popup-ttl">Дякую, очікуйте дзвінка!</div>
+      <div class="popup-order-num" id="popupOrderNum"></div>
+    </div>
+    <div class="popup-details">
+      <div class="popup-det-ttl">Деталі замовлення</div>
+      <div id="popupRows"></div>
+    </div>
+    <div class="popup-total-row">
+      <span>До сплати</span><span id="popupTotal"></span>
+    </div>
+    <button class="popup-btn" onclick="closePopup()">Закрити</button>
+  </div>
+</div>
+
+<script>
+const SHEET_URL='https://script.google.com/macros/s/AKfycbxMfSiQwdMTI0M0A-scrwrWW4Ker6V9y_APpkbUgzSzq702z2RLd3QSfi6nzAxxH0vW/exec';
+const TG_TOKEN='8782277242:AAH6fNfjqO9M5PbbrdGTqA_PlkynXaJJEsg';
+const TG_CHAT_ID='438820953';
+
+// ── ORDER NUMBER ──
+function getOrderNum(){
+  const key='bussy_order_counter';
+  let n=parseInt(localStorage.getItem(key)||'0')+1;
+  localStorage.setItem(key,n);
+  return '№'+String(n).padStart(7,'0');
+}
+
+// ── TELEGRAM ──
+async function sendTelegram(payload,orderNum){
+  const utm=getUTM();
+  const lines=[
+    '🚛 *Нове замовлення Bussy!*',
+    '*'+orderNum+'*',
+    '',
+    '👤 '+payload.name+' · '+payload.phone,
+    '📦 '+payload.services,
+    '🛣️ '+payload.from+' → '+payload.to+(payload.distance!=='—'?' ('+payload.distance+')':''),
+    payload.extras!=='—'?'➕ '+payload.extras:'',
+    '📅 '+payload.date+(payload.time!=='—'?', '+payload.time:''),
+    '💰 *'+payload.total+'*',
+    utm?'\n📊 '+utm:'',
+  ].filter(Boolean).join('\n');
+  try{
+    await fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:TG_CHAT_ID,text:lines,parse_mode:'Markdown'})
+    });
+  }catch(e){}
+}
+
+function getUTM(){
+  const p=new URLSearchParams(window.location.search);
+  const parts=[];
+  ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'].forEach(k=>{if(p.get(k)) parts.push(k+'='+p.get(k));});
+  return parts.join(' | ');
+}
+
+// ── PRICING ──
+const PRICING={
+  'garbage':     {base:350,km:18,label:'Вивіз сміття'},
+  'appliances':  {base:450,km:20,label:'Побутова техніка'},
+  'furniture-S': {base:400,km:20,label:'Меблі S'},
+  'furniture-M': {base:550,km:22,label:'Меблі M'},
+  'furniture-L': {base:750,km:24,label:'Меблі L'},
+  'construction-S':{base:400,km:18,label:'Будматеріали S'},
+  'construction-M':{base:550,km:20,label:'Будматеріали M'},
+  'construction-L':{base:750,km:22,label:'Будматеріали L'},
+  'apartment-1-2':{base:800,km:25,label:'Переїзд 1–2 кімнати'},
+  'apartment-3-4':{base:1100,km:25,label:'Переїзд 3–4 кімнати'},
+  'apartment-5+':{base:1500,km:25,label:'Переїзд 5+ кімнат'},
+  'commercial-до 500 кг':{base:550,km:20,label:'Комерційні до 500 кг'},
+  'commercial-до 2 т':{base:750,km:22,label:'Комерційні до 2 т'},
+  'commercial-до 4 т':{base:1000,km:25,label:'Комерційні до 4 т'},
+};
+const HAS_SUB=['furniture','construction','apartment','commercial'];
+// track which sub is currently open
+let openSubKey=null;
+// memory of sub selections
+const subMemory={};
+
+const S={svcKeys:{},svcBase:0,svcKm:20,svcLabels:[],distKm:0,distPrice:0,extOn:{},extVal:{},extLbl:{},extTotal:0,selDate:null,selTime:null,_total:0};
+const EXT_NAMES=['Вантажник','Пакувальник','Підйом','Розбирання меблів','Склад','Прибирання'];
+const EXT_FLAT=[null,300,null,300,null,null];
+
+// ── SERVICE SELECT — accordion sub ──
+function selectSvc(evt,key){
+  const hasSub=HAS_SUB.includes(key);
+  const el=document.getElementById('svc-'+key);
+  const isOn=el.classList.contains('on');
+
+  if(isOn){
+    el.classList.remove('on');
+    Object.keys(S.svcKeys).forEach(k=>{if(k===key||k.startsWith(key+'-')) delete S.svcKeys[k];});
+    // close sub if this one is open
+    if(openSubKey===key){
+      document.getElementById('sub-'+key+'-wrap').style.display='none';
+      openSubKey=null;
+    }
+  } else {
+    el.classList.add('on');
+    if(!hasSub){
+      S.svcKeys[key]=PRICING[key];
+    } else {
+      // close previously open sub (accordion)
+      if(openSubKey && openSubKey!==key){
+        document.getElementById('sub-'+openSubKey+'-wrap').style.display='none';
+      }
+      openSubKey=key;
+      const wrap=document.getElementById('sub-'+key+'-wrap');
+      wrap.style.display='block';
+      // restore memory
+      if(subMemory[key]){
+        const{subKey,base,km}=subMemory[key];
+        const fullKey=key+'-'+subKey;
+        S.svcKeys[fullKey]=PRICING[fullKey];
+        document.querySelectorAll('#sub-'+key+' .sub-chip').forEach(c=>c.classList.remove('on'));
+        const chips=document.querySelectorAll('#sub-'+key+' .sub-chip');
+        chips.forEach(c=>{if(c.onclick.toString().includes("'"+subKey+"'")) c.classList.add('on');});
+      }
+      setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
+    }
+  }
+  recalcSvc();
+}
+
+function selectSub(svcKey,subKey,base,km){
+  const fullKey=svcKey+'-'+subKey;
+  Object.keys(S.svcKeys).forEach(k=>{if(k.startsWith(svcKey+'-')) delete S.svcKeys[k];});
+  S.svcKeys[fullKey]=PRICING[fullKey];
+  subMemory[svcKey]={subKey,base,km};
+  document.querySelectorAll('#sub-'+svcKey+' .sub-chip').forEach(c=>c.classList.remove('on'));
+  event.currentTarget.classList.add('on');
+  recalcSvc();
+}
+
+function recalcSvc(){
+  const keys=Object.keys(S.svcKeys);
+  if(!keys.length){
+    S.svcBase=0;S.svcKm=20;S.svcLabels=[];
+    document.getElementById('st1').classList.remove('vis');
+    document.getElementById('sn1').classList.remove('done');
+  } else {
+    S.svcBase=keys.reduce((a,k)=>a+(S.svcKeys[k].base||0),0);
+    S.svcKm=Math.max(...keys.map(k=>S.svcKeys[k].km||20));
+    S.svcLabels=keys.map(k=>S.svcKeys[k].label);
+    const tag=document.getElementById('st1');
+    tag.textContent=keys.length+' вибрано';tag.classList.add('vis');
+    document.getElementById('sn1').classList.add('done');
+    if(typeof gtag!=='undefined') gtag('event','service_selected',{services:S.svcLabels.join(', ')});
+  }
+  calcPrice();
+}
+
+// ── AUTOCOMPLETE ──
+let acT={},acC={from:null,to:null};
+function setupAC(inId,dropId,ck){
+  const inp=document.getElementById(inId),drop=document.getElementById(dropId);
+  inp.addEventListener('input',()=>{
+    clearTimeout(acT[ck]);const q=inp.value.trim();
+    if(q.length<3){drop.classList.remove('open');return;}
+    acT[ck]=setTimeout(()=>fetchAC(q,drop,inp,ck),400);
+  });
+  inp.addEventListener('blur',()=>setTimeout(()=>drop.classList.remove('open'),200));
+}
+async function fetchAC(q,drop,inp,ck){
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+', Вінниця')}&format=json&limit=5&countrycodes=ua&addressdetails=1`,{headers:{'Accept-Language':'uk'}});
+    const d=await r.json();drop.innerHTML='';
+    if(!d.length){drop.classList.remove('open');return;}
+    d.forEach(item=>{
+      const pts=item.display_name.split(', ');
+      const main=pts[0]+(pts[1]?', '+pts[1]:'');
+      const sub=pts.slice(2,4).join(', ');
+      const el=document.createElement('div');el.className='ac-item';
+      el.innerHTML=`<span class="ac-ico">📍</span><div><div class="ac-main">${main}</div><div class="ac-sub">${sub}</div></div>`;
+      el.onclick=()=>{inp.value=main;acC[ck]={lat:parseFloat(item.lat),lon:parseFloat(item.lon)};drop.classList.remove('open');checkRoute();};
+      drop.appendChild(el);
+    });
+    drop.classList.add('open');
+  }catch(e){}
+}
+setupAC('fromIn','acFrom','from');
+setupAC('toIn','acTo','to');
+
+function swapRoute(){
+  const f=document.getElementById('fromIn'),t=document.getElementById('toIn');
+  [f.value,t.value]=[t.value,f.value];[acC.from,acC.to]=[acC.to,acC.from];checkRoute();
+}
+async function checkRoute(){
+  const from=document.getElementById('fromIn').value.trim(),to=document.getElementById('toIn').value.trim();
+  if(from&&to){document.getElementById('sn2').classList.add('done');const t2=document.getElementById('st2');t2.textContent='→';t2.classList.add('vis');}
+  else{document.getElementById('sn2').classList.remove('done');document.getElementById('st2').classList.remove('vis');}
+  if(acC.from&&acC.to) await calcDist();
+  else{S.distKm=0;S.distPrice=0;document.getElementById('distBadge').classList.remove('vis');calcPrice();}
+}
+async function calcDist(){
+  const{lat:flat,lon:flon}=acC.from,{lat:tlat,lon:tlon}=acC.to;
+  try{
+    const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${flon},${flat};${tlon},${tlat}?overview=false`);
+    const d=await r.json();
+    if(d.routes?.[0]){
+      const km=Math.round(d.routes[0].distance/1000);
+      S.distKm=km;S.distPrice=km*S.svcKm;
+      document.getElementById('distKm').textContent=km;
+      document.getElementById('distPrice').textContent=S.distPrice.toLocaleString('uk-UA');
+      document.getElementById('distBadge').classList.add('vis');
+    }
+  }catch(e){S.distKm=0;S.distPrice=0;}
+  calcPrice();
+}
+
+// ── EXTRAS ──
+function toggleExt(idx){
+  const item=document.getElementById('ex'+idx);const isOn=item.classList.contains('on');
+  if(isOn){
+    item.classList.remove('on');
+    const opts=document.getElementById('eo'+idx);if(opts) opts.classList.remove('open');
+    delete S.extOn[idx];delete S.extVal[idx];delete S.extLbl[idx];
+    item.querySelectorAll('.scroll-chip').forEach(c=>c.classList.remove('on'));
+  } else {
+    item.classList.add('on');
+    const opts=document.getElementById('eo'+idx);if(opts) opts.classList.add('open');
+    S.extOn[idx]=true;
+    if(EXT_FLAT[idx]!==null){S.extVal[idx]=EXT_FLAT[idx];S.extLbl[idx]=EXT_NAMES[idx];}
+    if(idx===2) updateFloor(document.getElementById('floorRange').value);
+    if(idx===4) recalcStorage();
+  }
+  recalcExt();
+}
+function pickWorker(label,price,el){
+  document.querySelectorAll('#workerStrip .scroll-chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');
+  S.extVal[0]=price;S.extLbl[0]='Вантажник · '+label;
+  document.getElementById('ep0').textContent=price+' ₴ · '+label;recalcExt();
+}
+function pickClean(label,price,el){
+  document.querySelectorAll('#cleanStrip .scroll-chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');
+  S.extVal[5]=price;S.extLbl[5]='Прибирання · '+label;
+  document.getElementById('ep5').textContent=price+' ₴ · '+label;recalcExt();
+}
+let storeDays=1,storeArea=5;
+function pickStoreDays(days,el){
+  storeDays=days;
+  document.querySelectorAll('#storeDaysStrip .scroll-chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');
+  if(S.extOn[4]) recalcStorage();
+}
+function pickStoreArea(area,el){
+  storeArea=area;
+  document.querySelectorAll('#storeAreaStrip .scroll-chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');
+  if(S.extOn[4]) recalcStorage();
+}
+function recalcStorage(){
+  const ppd=storeArea<=5?250:400;
+  const t=ppd*storeDays;
+  S.extVal[4]=t;S.extLbl[4]='Склад '+storeArea+'м² · '+storeDays+'дн.';
+  document.getElementById('ep4').textContent=t+' ₴ ('+storeArea+' м², '+storeDays+' дн.)';
+  recalcExt();
+}
+function updateFloor(v){
+  v=parseInt(v);const price=v*60;
+  document.getElementById('floorNum').innerHTML=v+'<small>-й поверх</small>';
+  document.getElementById('floorPrice').textContent=price+' ₴';
+  if(S.extOn[2]){S.extVal[2]=price;S.extLbl[2]='Підйом · '+v+' пов.';document.getElementById('ep2').textContent=price+' ₴ · '+v+' поверх';recalcExt();}
+}
+function recalcExt(){
+  S.extTotal=Object.values(S.extVal).reduce((a,b)=>a+b,0);
+  const cnt=Object.keys(S.extOn).length;
+  const tag=document.getElementById('st3');
+  if(cnt){tag.textContent=cnt+' вибрано';tag.classList.add('vis');document.getElementById('sn3').classList.add('done');}
+  else{tag.classList.remove('vis');document.getElementById('sn3').classList.remove('done');}
+  calcPrice();
+}
+
+// ── PRICE ──
+function calcPrice(){
+  if(S.distKm>0){S.distPrice=S.distKm*S.svcKm;document.getElementById('distPrice').textContent=S.distPrice.toLocaleString('uk-UA');}
+  const total=S.svcBase+S.distPrice+S.extTotal;S._total=total;
+  const tv=document.getElementById('tVal');
+  const prev=parseInt(tv.textContent.replace(/\D/g,''))||0;
+  tv.textContent=total.toLocaleString('uk-UA')+' ₴';
+  if(total!==prev){tv.classList.remove('pop');void tv.offsetWidth;tv.classList.add('pop');setTimeout(()=>tv.classList.remove('pop'),250);}
+  const bd=document.getElementById('breakdown');
+  if(total>0){
+    bd.classList.add('vis');let h='';
+    S.svcLabels.forEach((lbl,i)=>{
+      const k=Object.keys(S.svcKeys)[i];
+      const b=S.svcKeys[k]?S.svcKeys[k].base:0;
+      h+='<div class="bd-row"><span>Подача · '+lbl+'</span><span>'+b.toLocaleString('uk-UA')+' ₴</span></div>';
+    });
+    if(S.distPrice) h+='<div class="bd-row"><span>Маршрут '+S.distKm+' км × '+S.svcKm+' ₴</span><span>'+S.distPrice.toLocaleString('uk-UA')+' ₴</span></div>';
+    for(const[i,v] of Object.entries(S.extVal)) h+='<div class="bd-row"><span>'+(S.extLbl[i]||EXT_NAMES[i])+'</span><span>'+v.toLocaleString('uk-UA')+' ₴</span></div>';
+    document.getElementById('bdRows').innerHTML=h;
+    const bt=document.getElementById('bdTotal');bt.style.display='';
+    document.getElementById('bdTotalVal').textContent=total.toLocaleString('uk-UA')+' ₴';
+  } else bd.classList.remove('vis');
+}
+
+// ── SCROLL STRIPS ──
+function buildScrollStrip(id,items,fn){
+  const c=document.getElementById(id);
+  items.forEach(([label,val])=>{
+    const el=document.createElement('div');el.className='scroll-chip';el.textContent=label;
+    el.onclick=()=>fn(label,val,el);c.appendChild(el);
+  });
+}
+buildScrollStrip('workerStrip',[['1 год',200],['2 год',400],['3 год',600],['4 год',800],['5 год',1000],['6 год',1200],['7 год',1400],['8 год',1600]],(l,p,el)=>pickWorker(l,p,el));
+buildScrollStrip('cleanStrip',[['1 год',200],['2 год',400],['3 год',600],['4 год',800]],(l,p,el)=>pickClean(l,p,el));
+buildScrollStrip('storeDaysStrip',[['1 день',1],['2 дні',2],['3 дні',3],['4 дні',4],['5 днів',5],['6 днів',6],['7 днів',7]],(l,p,el)=>pickStoreDays(p,el));
+buildScrollStrip('storeAreaStrip',[['до 5 м²',5],['до 10 м²',10],['до 15 м²',15]],(l,p,el)=>pickStoreArea(p,el));
+
+// ── DATE — не скролить назад на сьогодні після вибору ──
+const today=new Date();let cy=today.getFullYear(),cm=today.getMonth(),selD=null;
+const MN=['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
+const MNU=['січ','лют','бер','квіт','трав','черв','лип','серп','вер','жовт','лист','груд'];
+const WD=['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
+function chMon(d){cm+=d;if(cm>11){cm=0;cy++;}if(cm<0){cm=11;cy--;}renderStrip(false);}
+function renderStrip(scrollToToday){
+  document.getElementById('calTtl').textContent=MN[cm]+' '+cy;
+  const strip=document.getElementById('dateStrip');strip.innerHTML='';
+  const dim=new Date(cy,cm+1,0).getDate();
+  const todS=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  let tc=null,sc=null;
+  for(let d=1;d<=dim;d++){
+    const dt=new Date(cy,cm,d);
+    const ip=dt<todS,it=d===today.getDate()&&cm===today.getMonth()&&cy===today.getFullYear();
+    const is=selD&&selD.d===d&&selD.m===cm&&selD.y===cy;
+    const card=document.createElement('div');
+    card.className='date-card'+(ip?' past':'')+(it?' today':'')+(is?' sel':'');
+    card.innerHTML='<span class="dc-wd">'+WD[dt.getDay()]+'</span><span class="dc-d">'+d+'</span>';
+    if(!ip) card.onclick=()=>pickDay(d);
+    strip.appendChild(card);
+    if(it) tc=card;
+    if(is) sc=card;
+  }
+  // scroll to selected if exists, else to today only on initial load
+  const target=sc||(scrollToToday?tc:null);
+  if(target) setTimeout(()=>{const strip=document.getElementById('dateStrip');if(strip&&target){strip.scrollLeft=target.offsetLeft-strip.offsetWidth/2+target.offsetWidth/2;}},50);
+}
+function pickDay(d){
+  selD={d,m:cm,y:cy};
+  renderStrip(false); // НЕ скролимо назад на today
+  S.selDate=d+' '+MNU[cm]+' '+cy;
+  updateDateTag();
+  document.getElementById('sn4').classList.add('done');
+}
+function updateDateTag(){
+  const tag=document.getElementById('st4');
+  const pts=[S.selDate,S.selTime].filter(Boolean);
+  if(pts.length){tag.textContent=pts.join(', ');tag.classList.add('vis');}
+  else tag.classList.remove('vis');
+}
+
+// ── TIME — без 20:00 ──
+function buildTime(){
+  const g=document.getElementById('timeGrid');
+  ['8:00','9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'].forEach(t=>{
+    const el=document.createElement('div');el.className='time-chip';el.textContent=t;
+    el.onclick=()=>{document.querySelectorAll('.time-chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');S.selTime=t;updateDateTag();};
+    g.appendChild(el);
+  });
+}
+
+// ── SUBMIT ──
+async function submitOrder(){
+  let ok=true;
+  ['nameInp','phoneInp'].forEach(id=>{const el=document.getElementById(id);if(!el.value.trim()){el.classList.add('err');ok=false;}else el.classList.remove('err');});
+  if(!ok) return;
+  const btn=document.getElementById('submitBtn');btn.classList.add('btn-loading');btn.disabled=true;
+  const orderNum=getOrderNum();
+  const payload={
+    orderNum,
+    name:document.getElementById('nameInp').value.trim(),
+    phone:document.getElementById('phoneInp').value.trim(),
+    services:S.svcLabels.join(', ')||'—',
+    from:document.getElementById('fromIn').value||'—',
+    to:document.getElementById('toIn').value||'—',
+    distance:S.distKm?S.distKm+' км':'—',
+    extras:Object.values(S.extLbl).join(', ')||'—',
+    date:S.selDate||'—',
+    time:S.selTime||'—',
+    total:S._total.toLocaleString('uk-UA')+' ₴',
+    utm:getUTM()||'—'
+  };
+  try{await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}catch(e){}
+  await sendTelegram(payload,orderNum);
+  if(typeof gtag!=='undefined') gtag('event','order_submitted',{service:payload.services,total:payload.total});
+  btn.classList.remove('btn-loading');btn.disabled=false;
+  showPopup(payload,orderNum);
+}
+
+function showPopup(payload,orderNum){
+  document.getElementById('popupOrderNum').textContent=orderNum;
+  document.getElementById('popupTotal').textContent=payload.total;
+  // build detail rows
+  let h='';
+  if(payload.services!=='—') h+='<div class="popup-det-row"><span>Послуги</span><span>'+payload.services+'</span></div>';
+  if(payload.from!=='—') h+='<div class="popup-det-row"><span>Звідки</span><span>'+payload.from+'</span></div>';
+  if(payload.to!=='—') h+='<div class="popup-det-row"><span>Куди</span><span>'+payload.to+'</span></div>';
+  if(payload.distance!=='—') h+='<div class="popup-det-row"><span>Відстань</span><span>'+payload.distance+'</span></div>';
+  if(payload.extras!=='—') h+='<div class="popup-det-row"><span>Додатково</span><span>'+payload.extras+'</span></div>';
+  if(payload.date!=='—') h+='<div class="popup-det-row"><span>Дата</span><span>'+payload.date+'</span></div>';
+  if(payload.time!=='—') h+='<div class="popup-det-row"><span>Час</span><span>'+payload.time+'</span></div>';
+  document.getElementById('popupRows').innerHTML=h;
+  document.getElementById('popup').classList.add('open');
+}
+function closePopup(){
+  document.getElementById('popup').classList.remove('open');
+  document.getElementById('nameInp').value='';
+  document.getElementById('phoneInp').value='';
+}
+
+buildTime();
+renderStrip(true);
+</script>
+</body>
+</html>
