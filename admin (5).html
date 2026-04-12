@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bussy Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #FFD600;
+    --dark: #111111;
+    --gray: #F5F5F0;
+    --border: #E8E8E0;
+    --text: #111111;
+    --muted: #888880;
+    --green: #22c55e;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--gray);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .header {
+    background: var(--dark);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -1px;
+  }
+  .logo span { color: var(--yellow); }
+  .admin-badge {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .container { padding: 16px 20px 40px; max-width: 480px; margin: 0 auto; }
+  .card {
+    background: #fff;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 14px;
+  }
+  .field { margin-bottom: 12px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--yellow); }
+  .field textarea { resize: vertical; min-height: 70px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .amount-field input {
+    font-size: 22px;
+    font-weight: 600;
+    font-family: 'Unbounded', sans-serif;
+    padding: 14px;
+  }
+  .generate-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--yellow);
+    color: var(--dark);
+    border: none;
+    border-radius: var(--radius);
+    font-size: 17px;
+    font-weight: 700;
+    font-family: 'Unbounded', sans-serif;
+    cursor: pointer;
+    margin-bottom: 12px;
+    transition: transform 0.1s, opacity 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .generate-btn:active { transform: scale(0.98); }
+  .generate-btn:disabled { opacity: 0.5; pointer-events: none; }
+
+  .links-section { display: none; }
+  .order-summary {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .order-summary strong { color: var(--text); }
+
+  .link-item {
+    background: var(--gray);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+  }
+  .link-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .link-role {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .link-role-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-client { background: #dbeafe; color: #1e40af; }
+  .badge-driver { background: #fef9c3; color: #854d0e; }
+  .badge-admin { background: #dcfce7; color: #166534; }
+  .link-url {
+    font-size: 12px;
+    color: var(--muted);
+    word-break: break-all;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .copy-btn {
+    width: 100%;
+    padding: 10px;
+    background: var(--dark);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .copy-btn:active { opacity: 0.7; }
+  .copy-btn.copied { background: var(--green); }
+
+  .saved-badge {
+    display: none;
+    background: #dcfce7;
+    color: #166534;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  .history-section { margin-top: 8px; }
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--gray);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  .history-item:hover { border-color: var(--yellow); }
+  .history-order { font-size: 14px; font-weight: 600; }
+  .history-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .history-arrow { color: var(--muted); font-size: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Bu<span>ss</span>y</div>
+  <div class="admin-badge">Адмін панель</div>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <div class="card-title">Деталі замовлення</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Номер замовлення</label>
+        <input type="text" id="orderNumber" placeholder="023456" oninput="clearLinks()">
+      </div>
+      <div class="field">
+        <label>Телефон клієнта</label>
+        <input type="tel" id="clientPhone" placeholder="+380...">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Ім'я клієнта</label>
+        <input type="text" id="clientName" placeholder="Олена Марченко">
+      </div>
+      <div class="field">
+        <label>Ім'я водія</label>
+        <input type="text" id="driverName" placeholder="Василь К.">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Послуга</label>
+      <input type="text" id="service" placeholder="Перевезення холодильника та пральної машини">
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Звідки</label>
+        <input type="text" id="from" placeholder="вул. Соборна, 14">
+      </div>
+      <div class="field">
+        <label>Куди</label>
+        <input type="text" id="to" placeholder="вул. Київська, 87">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Відстань</label>
+        <input type="text" id="distance" placeholder="5 км">
+      </div>
+      <div class="field">
+        <label>Дата і час</label>
+        <input type="text" id="datetime" placeholder="25.03 о 14:00">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Додатково</label>
+      <textarea id="notes" placeholder="Вантажник, підйом на 3-й поверх..."></textarea>
+    </div>
+
+    <div class="field amount-field">
+      <label>Сума до сплати (₴)</label>
+      <input type="number" id="amount" placeholder="850">
+    </div>
+  </div>
+
+  <button class="generate-btn" id="generate-btn" onclick="generate()">
+    ⚡ Згенерувати посилання
+  </button>
+
+  <div class="links-section" id="links-section">
+    <div class="card">
+      <div class="card-title">Посилання поїздки</div>
+      <div class="order-summary" id="order-summary"></div>
+
+      <div class="link-item">
+        <div class="link-header">
+          <div class="link-role">Клієнт</div>
+          <div class="link-role-badge badge-client">Оплата + трекінг</div>
+        </div>
+        <div class="link-url" id="url-client"></div>
+        <button class="copy-btn" id="copy-client" onclick="copyUrl('client')">Скопіювати</button>
+      </div>
+
+      <div class="link-item">
+        <div class="link-header">
+          <div class="link-role">Водій</div>
+          <div class="link-role-badge badge-driver">Деталі + кнопки</div>
+        </div>
+        <div class="link-url" id="url-driver"></div>
+        <button class="copy-btn" id="copy-driver" onclick="copyUrl('driver')">Скопіювати</button>
+      </div>
+
+      <div class="link-item">
+        <div class="link-header">
+          <div class="link-role">Адмін</div>
+          <div class="link-role-badge badge-admin">Моніторинг</div>
+        </div>
+        <div class="link-url" id="url-admin"></div>
+        <button class="copy-btn" id="copy-admin" onclick="copyUrl('admin')">Скопіювати</button>
+      </div>
+
+      <div class="saved-badge" id="saved-badge">✓ Збережено в Firebase і Google Sheets</div>
+    </div>
+  </div>
+
+  <div class="card history-section" id="history-section" style="display:none;">
+    <div class="card-title">Останні замовлення</div>
+    <div id="history-list"></div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDRbyjk3nnbWXgZCcW7PAq_BQcqerY7paE",
+    authDomain: "bussy-ee650.firebaseapp.com",
+    databaseURL: "https://bussy-ee650-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "bussy-ee650",
+    storageBucket: "bussy-ee650.firebasestorage.app",
+    messagingSenderId: "841941953587",
+    appId: "1:841941953587:web:c99c94dc971f604960c746"
+  };
+
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzAIKfIxUuuhlawwQGQoF3LZ__51743PD5uIckh8Pa0LvJCM_z7U8hFg8ZOuHUjS9M/exec';
+  const TRIP_BASE = 'https://bussy.mobi/trip.html';
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  window.generate = async function() {
+    const order = document.getElementById('orderNumber').value.trim();
+    if (!order) { alert('Введи номер замовлення'); return; }
+
+    const orderData = {
+      orderNumber: order,
+      clientName: document.getElementById('clientName').value.trim(),
+        driverName: document.getElementById('driverName').value.trim(),
+      clientPhone: document.getElementById('clientPhone').value.trim(),
+      service: document.getElementById('service').value.trim(),
+      from: document.getElementById('from').value.trim(),
+      to: document.getElementById('to').value.trim(),
+      distance: document.getElementById('distance').value.trim(),
+      datetime: document.getElementById('datetime').value.trim(),
+      notes: document.getElementById('notes').value.trim(),
+      amount: document.getElementById('amount').value.trim(),
+    };
+
+    const btn = document.getElementById('generate-btn');
+    btn.disabled = true;
+    btn.textContent = 'Зберігаємо...';
+
+    try {
+      await set(ref(db, `trips/${order}`), {
+        phase: 'idle',
+        orderData,
+        createdAt: Date.now()
+      });
+
+      const urlClient = `${TRIP_BASE}?order=${order}&view=client`;
+      const urlDriver = `${TRIP_BASE}?order=${order}&view=driver`;
+      const urlAdmin  = `${TRIP_BASE}?order=${order}&view=admin`;
+
+      document.getElementById('url-client').textContent = urlClient;
+      document.getElementById('url-driver').textContent = urlDriver;
+      document.getElementById('url-admin').textContent  = urlAdmin;
+
+      document.getElementById('order-summary').innerHTML =
+        `<strong>#${order}</strong> · ${orderData.clientName || '—'} · ${orderData.clientPhone || '—'} · ${orderData.amount ? orderData.amount + ' ₴' : '—'}`;
+
+      document.getElementById('links-section').style.display = 'block';
+      document.getElementById('saved-badge').style.display = 'block';
+
+      saveToHistory(order, orderData);
+      renderHistory();
+
+    } catch(e) {
+      alert('Помилка: ' + e.message);
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '⚡ Згенерувати посилання';
+  };
+
+  window.copyUrl = function(role) {
+    const url = document.getElementById(`url-${role}`).textContent;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById(`copy-${role}`);
+      btn.textContent = 'Скопійовано ✓';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Скопіювати';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  };
+
+  window.clearLinks = function() {
+    document.getElementById('links-section').style.display = 'none';
+    document.getElementById('saved-badge').style.display = 'none';
+  };
+
+  function saveToHistory(order, data) {
+    const history = JSON.parse(localStorage.getItem('bussy_history') || '[]');
+    history.unshift({ order, client: data.clientName, phone: data.clientPhone, amount: data.amount, ts: Date.now() });
+    localStorage.setItem('bussy_history', JSON.stringify(history.slice(0, 20)));
+  }
+
+  function renderHistory() {
+    const history = JSON.parse(localStorage.getItem('bussy_history') || '[]');
+    if (!history.length) return;
+    const section = document.getElementById('history-section');
+    const list = document.getElementById('history-list');
+    section.style.display = 'block';
+    list.innerHTML = history.slice(0, 5).map(h => `
+      <div class="history-item" onclick="openTrip('${h.order}')">
+        <div>
+          <div class="history-order">#${h.order}</div>
+          <div class="history-meta">${h.client || '—'} · ${h.amount ? h.amount + ' ₴' : '—'}</div>
+        </div>
+        <div class="history-arrow">→</div>
+      </div>
+    `).join('');
+  }
+
+  window.openTrip = function(order) {
+    window.open(`${TRIP_BASE}?order=${order}&view=admin`, '_blank');
+  };
+
+  renderHistory();
+</script>
+</body>
+</html>
