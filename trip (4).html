@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bussy — Замовлення</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ffc900'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='18' fill='%230f0f0f'%3EB%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--y:#ffc900;--yl:#fffaeb;--yd:#e6b400;--blk:#0f0f0f;--bg:#f7f7f7;--card:#fff;--line:#ebebeb;--t2:#888;--t3:#bbb;--r:20px;--rs:13px}
+body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--blk);max-width:480px;margin:0 auto;min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:40px}
+
+nav{background:var(--card);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:200}
+.logo-name{font-family:'Unbounded',sans-serif;font-weight:900;font-size:19px;letter-spacing:-.5px}
+.logo-name em{color:var(--y);font-style:normal}
+.logo-sub{font-size:10px;color:var(--t2);margin-top:1px;font-weight:500}
+.status-pill{padding:6px 14px;border-radius:100px;font-size:12px;font-weight:700}
+.pill-wait{background:#f1f5f9;color:#64748b}
+.pill-loading{background:#fef9c3;color:#854d0e}
+.pill-driving{background:#dcfce7;color:#166534}
+.pill-unloading{background:#fef9c3;color:#854d0e}
+.pill-done{background:#dcfce7;color:#166534}
+
+.order-hero{background:var(--blk);padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+.order-num{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:900;color:var(--y)}
+.order-date{font-size:12px;color:#888}
+
+.card{background:var(--card);border-radius:var(--r);margin:12px 12px 0;padding:16px 18px}
+.card-title{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.no-data{font-size:13px;color:var(--t3);font-style:italic}
+
+.d-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line);gap:12px}
+.d-row:last-child{border-bottom:none;padding-bottom:0}
+.d-lbl{font-size:13px;color:var(--t2);flex-shrink:0}
+.d-val{font-size:13px;font-weight:600;text-align:right;line-height:1.4}
+
+/* AMOUNT BAR */
+.amount-bar{background:var(--blk);border-radius:var(--r);margin:12px 12px 0;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.amount-lbl{font-size:13px;color:#888}
+.amount-val{font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;color:var(--y)}
+
+/* COPY CARD */
+.copy-card-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 24px);margin:12px 12px 0;padding:18px 20px;background:var(--y);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:14px;font-weight:900;border:none;border-radius:100px;cursor:pointer;transition:transform .1s,background .15s}
+.copy-card-btn:active{transform:scale(.97);background:var(--yd)}
+.card-number-display{text-align:center;margin:10px 12px 0;font-size:18px;font-weight:700;letter-spacing:2px;color:var(--blk)}
+.card-hint{text-align:center;font-size:12px;color:var(--t2);margin-top:4px}
+
+/* ACCORDION */
+.accordion{margin:12px 12px 0}
+.acc-item{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:6px;overflow:hidden}
+.acc-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer}
+.acc-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.acc-arrow{color:var(--t2);font-size:12px;transition:transform .2s;flex-shrink:0}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{display:none;padding:0 16px 16px;font-size:13px;color:var(--t2);line-height:1.7}
+.acc-item.open .acc-body{display:block}
+.acc-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
+.acc-list li{display:flex;gap:10px;align-items:flex-start}
+.acc-dot{width:6px;height:6px;border-radius:50%;background:var(--y);flex-shrink:0;margin-top:6px}
+.acc-note{background:var(--yl);border-radius:10px;padding:10px 12px;font-size:12px;color:#7a5c00;margin-top:10px;line-height:1.5}
+.acc-warn{background:#fff3cd;border-radius:10px;padding:10px 12px;font-size:12px;color:#856404;margin-top:10px;line-height:1.5;font-weight:600}
+.acc-steps-num{list-style:none;display:flex;flex-direction:column;gap:10px}
+.acc-steps-num li{display:flex;gap:10px;align-items:flex-start}
+.acc-step-num{background:var(--y);color:var(--blk);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* TRACKING */
+.tl{display:flex;flex-direction:column}
+.tl-item{display:flex;gap:14px}
+.tl-left{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0}
+.tl-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);background:#fff;flex-shrink:0;transition:all .3s}
+.tl-dot.active{background:var(--y);border-color:var(--y);box-shadow:0 0 0 4px rgba(255,201,0,.2)}
+.tl-dot.done{background:#22c55e;border-color:#22c55e}
+.tl-line{width:2px;flex:1;background:var(--line);min-height:24px}
+.tl-content{padding-bottom:18px}
+.tl-label{font-size:14px;font-weight:600}
+.tl-time{font-size:13px;color:var(--t2);margin-top:2px;font-variant-numeric:tabular-nums}
+
+/* MAP */
+.map-wrap{margin:12px 12px 0;display:none}
+.map-title{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+#map{height:240px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line)}
+
+/* SUMMARY */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sum-item{background:var(--bg);border-radius:12px;padding:12px}
+.sum-lbl{font-size:11px;color:var(--t2);margin-bottom:4px}
+.sum-val{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.sum-total{background:var(--y);grid-column:1/-1}
+
+/* DRIVER CONTROLS */
+.timer-box{background:var(--blk);border-radius:var(--r);padding:20px;text-align:center;margin:12px 12px 0;display:none}
+.timer-lbl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.timer-val{font-family:'Unbounded',sans-serif;font-size:44px;font-weight:900;color:var(--y);font-variant-numeric:tabular-nums;letter-spacing:2px}
+.drv-btn{display:none;width:calc(100% - 24px);margin:12px 12px 0;padding:18px;border:none;border-radius:100px;font-size:16px;font-weight:900;font-family:'Unbounded',sans-serif;cursor:pointer;transition:transform .1s}
+.drv-btn:active{transform:scale(.97)}
+.btn-y{background:var(--y);color:var(--blk)}
+.btn-dk{background:var(--blk);color:#fff}
+.btn-rd{background:#ef4444;color:#fff}
+
+/* PHOTO */
+.photo-drop{border:2px dashed var(--line);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s}
+.photo-drop:hover{border-color:var(--y)}
+.photo-submit{width:100%;margin-top:12px;padding:14px;background:var(--blk);color:#fff;border:none;border-radius:100px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif}
+.success-msg{background:#e8f5ed;color:#2d7d46;padding:14px;border-radius:12px;font-size:14px;font-weight:700;text-align:center}
+
+/* REVIEW (inline) */
+.stars-row{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.star{font-size:36px;cursor:pointer;transition:transform .1s;-webkit-tap-highlight-color:transparent;filter:grayscale(1);opacity:.25;line-height:1;user-select:none}
+.star.on{filter:none;opacity:1}
+.star.pop{transform:scale(1.3)}
+.star-lbl{font-size:12px;color:var(--t2);margin-left:4px;min-width:60px}
+.sent-badge{display:none;align-items:center;gap:6px;background:#e8f5ed;border-radius:100px;padding:4px 12px;font-size:11px;font-weight:700;color:#2d7d46;margin-top:8px}
+.sent-badge.vis{display:inline-flex}
+.btn-promo{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--y);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:900;padding:18px 20px;border-radius:100px;border:none;cursor:pointer;transition:transform .15s,background .15s;margin-top:10px}
+.btn-promo:active{transform:scale(.97);background:var(--yd)}
+.btn-share{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--card);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:900;padding:18px 20px;border-radius:100px;border:1.5px solid var(--line);cursor:pointer;transition:transform .15s;margin-top:10px}
+.btn-share:active{transform:scale(.97)}
+
+/* POPUP */
+.overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.open{opacity:1;pointer-events:all}
+.popup{background:var(--card);border-radius:24px 24px 0 0;padding:28px 22px 36px;width:100%;max-width:480px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)}
+.overlay.open .popup{transform:translateY(0)}
+.popup-drag{width:40px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 20px}
+.popup-ico{font-size:40px;text-align:center;margin-bottom:12px}
+.popup-ttl{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:900;text-align:center;margin-bottom:6px}
+.popup-sub{font-size:12px;color:var(--t2);text-align:center;line-height:1.6;margin-bottom:20px}
+.promo-box{background:var(--y);border-radius:var(--rs);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.promo-code{font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:var(--blk);letter-spacing:1px}
+.promo-btn{background:var(--blk);color:#fff;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;padding:9px 18px;border-radius:100px;border:none;cursor:pointer;white-space:nowrap}
+.promo-note{font-size:11px;color:var(--t2);text-align:center;line-height:1.5}
+.popup-close{display:block;width:100%;background:var(--bg);color:var(--blk);font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;padding:13px;border-radius:100px;border:none;cursor:pointer;margin-top:14px}
+.share-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.share-opt{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--bg);border-radius:var(--rs);cursor:pointer;border:none;width:100%;text-align:left;transition:background .15s}
+.share-opt:active{background:var(--yl)}
+.share-opt-ico{font-size:24px;width:32px;text-align:center;flex-shrink:0}
+.share-opt-text{font-size:14px;font-weight:600;color:var(--blk)}
+.share-opt-sub{font-size:11px;color:var(--t2);margin-top:1px}
+
+/* ADMIN LINKS */
+.al-item{background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--line);cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.al-item:last-child{margin-bottom:0}
+.al-role{font-size:12px;font-weight:700;color:var(--blk)}
+.al-url{font-size:11px;color:var(--t2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+
+footer{background:var(--blk);color:#fff;margin:16px 12px 0;border-radius:var(--r);padding:16px 18px;display:flex;align-items:center;justify-content:space-between}
+.ft-logo{font-family:'Unbounded',sans-serif;font-weight:900;font-size:14px}
+.ft-logo em{color:var(--y);font-style:normal}
+.ft-phone{font-size:12px;font-weight:600;color:#fff;text-decoration:none}
+.ft-hint{font-size:10px;color:rgba(255,255,255,.35);margin-bottom:2px}
+
+.copied-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--blk);color:#fff;font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;padding:12px 24px;border-radius:100px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999;white-space:nowrap}
+.copied-toast.show{opacity:1}
+</style>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,update,onValue}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB={apiKey:"AIzaSyDRbyjk3nnbWXgZCcW7PAq_BQcqerY7paE",authDomain:"bussy-ee650.firebaseapp.com",databaseURL:"https://bussy-ee650-default-rtdb.europe-west1.firebasedatabase.app",projectId:"bussy-ee650",storageBucket:"bussy-ee650.firebasestorage.app",messagingSenderId:"841941953587",appId:"1:841941953787:web:c99c94dc971f604960c746"};
+const AS='https://script.google.com/macros/s/AKfycbzAIKfIxUuuhlawwQGQoF3LZ__51743PD5uIckh8Pa0LvJCM_z7U8hFg8ZOuHUjS9M/exec';
+const SHARE_URL='https://bussy.mobi/?utm_source=referral&utm_medium=client&utm_campaign=review';
+const CARD='5168 7451 3289 4343';
+const TRIP_BASE=window.location.origin+window.location.pathname;
+
+const fbapp=initializeApp(FB);
+const db=getDatabase(fbapp);
+const p=new URLSearchParams(window.location.search);
+const order=p.get('order')||'unknown';
+const view=p.get('view')||'client';
+const tripRef=ref(db,`trips/${order}`);
+
+let map=null,marker=null,geoId=null;
+let drvTimerInt=null;
+let dispTimerInt=null;
+let currentPhase='idle';
+let tripData={};
+
+// ---- HELPERS ----
+function pad(n){return String(n).padStart(2,'0');}
+function fmt(s){if(!s&&s!==0)return'—';s=Math.round(Math.max(0,s));const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return h>0?`${pad(h)}:${pad(m)}:${pad(sc)}`:`${pad(m)}:${pad(sc)}`;}
+function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v||'—';}
+window.showToast=function(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);};
+
+// ---- MAP ----
+function initMap(lat,lng){
+  if(map)return;
+  const el=document.getElementById('map');
+  if(!el)return;
+  map=L.map('map').setView([lat,lng],15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}).addTo(map);
+  const icon=L.divIcon({html:'<div style="background:#ffc900;width:36px;height:36px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 10px rgba(0,0,0,.3)">🚛</div>',className:'',iconSize:[36,36],iconAnchor:[18,18]});
+  marker=L.marker([lat,lng],{icon}).addTo(map);
+}
+function moveMarker(lat,lng){
+  if(!map){initMap(lat,lng);return;}
+  marker.setLatLng([lat,lng]);
+  map.panTo([lat,lng],{animate:true,duration:1});
+}
+
+// ---- GEO ----
+function startGeo(){
+  if(!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(pos=>pushGeo(pos.coords),null,{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+  geoId=navigator.geolocation.watchPosition(pos=>pushGeo(pos.coords),err=>console.warn('geo',err),{enableHighAccuracy:true,maximumAge:0,timeout:15000});
+}
+function pushGeo(c){
+  update(tripRef,{lat:c.latitude,lng:c.longitude,acc:Math.round(c.accuracy),lastGeo:Date.now()});
+  if(view==='driver')moveMarker(c.latitude,c.longitude);
+}
+function stopGeo(){if(geoId!==null){navigator.geolocation.clearWatch(geoId);geoId=null;}}
+
+// ---- TIMERS ----
+function startDispTimer(startMs,elId){
+  if(dispTimerInt)clearInterval(dispTimerInt);
+  function tick(){const el=document.getElementById(elId);if(el)el.textContent=fmt(Math.floor((Date.now()-startMs)/1000));}
+  tick();dispTimerInt=setInterval(tick,1000);
+}
+function stopDispTimer(){if(dispTimerInt){clearInterval(dispTimerInt);dispTimerInt=null;}}
+function startDrvTimer(startMs,labelEl,valEl){
+  if(drvTimerInt)clearInterval(drvTimerInt);
+  function tick(){const el=document.getElementById(valEl);if(el)el.textContent=fmt(Math.floor((Date.now()-startMs)/1000));}
+  tick();drvTimerInt=setInterval(tick,1000);
+}
+function stopDrvTimer(){if(drvTimerInt){clearInterval(drvTimerInt);drvTimerInt=null;}}
+
+// ---- GEOCODE address to lat/lng ----
+async function geocodeAddress(addr){
+  try{
+    const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr+', Вінниця, Україна')}&format=json&limit=1`;
+    const r=await fetch(url,{headers:{'Accept-Language':'uk'}});
+    const j=await r.json();
+    if(j&&j[0])return{lat:parseFloat(j[0].lat),lng:parseFloat(j[0].lon)};
+  }catch(e){}
+  return null;
+}
+
+// ---- RENDER ----
+window.addEventListener('DOMContentLoaded',()=>{
+  setText('order-num',order);
+  document.getElementById('order-date').textContent=new Date().toLocaleDateString('uk-UA',{day:'numeric',month:'long'});
+
+  if(view==='driver'){
+    document.getElementById('nav-status').style.display='none';
+    document.getElementById('driver-section').style.display='block';
+    document.getElementById('tracking-section').style.display='block';
+  }
+  if(view==='admin'){
+    document.getElementById('admin-section').style.display='block';
+    document.getElementById('tracking-section').style.display='block';
+    const base=TRIP_BASE;
+    document.getElementById('url-client').textContent=`${base}?order=${order}&view=client`;
+    document.getElementById('url-driver').textContent=`${base}?order=${order}&view=driver`;
+  }
+
+  onValue(tripRef,snap=>{
+    const data=snap.val()||{};
+    tripData=data;
+    const od=data.orderData||{};
+
+    // details
+    renderDetails(od);
+    renderPhase(data);
+  });
+
+  setupAccordions();
+  setupCopyCard();
+  setupReview();
+});
+
+function renderDetails(od){
+  // Common fields
+  setText('d-service',od.service);
+  setText('d-from',od.from);
+  setText('d-to',od.to);
+  setText('d-distance',od.distance);
+  setText('d-notes',od.notes);
+  setText('d-datetime',od.datetime);
+  // Client+Admin
+  if(view!=='driver'){
+    setText('d-client',od.clientName);
+    setText('d-phone',od.clientPhone);
+    if(od.driverName){
+      setText('d-driver',od.driverName);
+      const r=document.getElementById('row-driver');
+      if(r)r.style.display='flex';
+    }
+  }
+  // Admin only — amount + driver already shown above
+  if(view==='admin'){
+    const amtRow=document.getElementById('row-amount');
+    if(amtRow)amtRow.style.display='flex';
+    setText('d-amount',od.amount?od.amount+' ₴':'—');
+  }
+  // Client only — amount bar
+  if(view==='client'){
+    setText('d-amount-bar',od.amount?od.amount+' ₴':'—');
+    // hide driver row for client
+    const r=document.getElementById('row-driver');
+    if(r && od.driverName){r.style.display='flex'; setText('d-driver',od.driverName);}
+  }
+
+  // Map initial point from address
+  if(!map && od.from){
+    geocodeAddress(od.from).then(coords=>{
+      if(coords)initMap(coords.lat,coords.lng);
+      else initMap(49.2328,28.4682);
+    });
+  } else if(!map){
+    initMap(49.2328,28.4682);
+  }
+}
+
+function renderPhase(data){
+  const phase=data.phase||'idle';
+  currentPhase=phase;
+  updatePill(phase);
+
+  // Client: switch from payment to tracking when driver starts
+  if(view==='client'){
+    if(phase==='idle'){
+      document.getElementById('payment-section').style.display='block';
+      document.getElementById('tracking-section').style.display='none';
+    } else {
+      document.getElementById('payment-section').style.display='none';
+      document.getElementById('tracking-section').style.display='block';
+    }
+  }
+
+  // Map: show during driving
+  const showMap=(phase==='driving');
+  if(view!=='driver'){
+    document.getElementById('map-wrap').style.display=showMap?'block':'none';
+    if(showMap&&data.lat&&data.lng)moveMarker(data.lat,data.lng);
+  } else {
+    // driver always has map visible
+    document.getElementById('map-wrap').style.display='block';
+    if(data.lat&&data.lng)moveMarker(data.lat,data.lng);
+  }
+
+  updateTimeline(phase,data);
+  if(view==='driver')updateDriverUI(phase,data);
+
+  if(phase==='done'){
+    stopDispTimer();stopDrvTimer();stopGeo();
+    document.getElementById('summary-card').style.display='block';
+    setText('sum-loading',fmt(data.loadingTime));
+    setText('sum-trip',fmt(data.tripTime));
+    setText('sum-unload',fmt(data.unloadingTime));
+    setText('sum-total',fmt(data.totalTime));
+    if(view==='client'){
+      document.getElementById('review-section').style.display='block';
+    }
+    if(view==='driver'&&!data.photoUploaded){
+      document.getElementById('photo-card').style.display='block';
+    }
+  }
+}
+
+function updatePill(phase){
+  const labels={idle:'Очікує оплати',loading:'Завантаження',driving:'В дорозі',unloading:'Розвантаження',done:'Завершено'};
+  const cls={idle:'pill-wait',loading:'pill-loading',driving:'pill-driving',unloading:'pill-unloading',done:'pill-done'};
+  const el=document.getElementById('nav-status');
+  if(el){el.textContent=labels[phase]||phase;el.className='status-pill '+(cls[phase]||'pill-wait');}
+}
+
+function updateTimeline(phase,data){
+  const steps=[
+    {id:'tl-loading',phase:'loading',doneKey:'loadingTime',startKey:'loadingStartTs',timeId:'tl-time-loading'},
+    {id:'tl-driving',phase:'driving',doneKey:'tripTime',startKey:'drivingStartTs',timeId:'tl-time-driving'},
+    {id:'tl-unloading',phase:'unloading',doneKey:'unloadingTime',startKey:'unloadingStartTs',timeId:'tl-time-unloading'},
+  ];
+  const order2=['idle','loading','driving','unloading','done'];
+  const phaseIdx=order2.indexOf(phase);
+
+  steps.forEach(s=>{
+    const el=document.getElementById(s.id);
+    if(!el)return;
+    const dot=el.querySelector('.tl-dot');
+    const timeEl=document.getElementById(s.timeId);
+    const stepIdx=order2.indexOf(s.phase);
+
+    if(phase==='done'){
+      dot.className=stepIdx<order2.indexOf('done')?'tl-dot done':'tl-dot';
+      if(timeEl&&data[s.doneKey]!==undefined)timeEl.textContent=fmt(data[s.doneKey]);
+      stopDispTimer();
+    } else if(stepIdx<phaseIdx){
+      dot.className='tl-dot done';
+      if(timeEl&&data[s.doneKey]!==undefined)timeEl.textContent=fmt(data[s.doneKey]);
+    } else if(s.phase===phase){
+      dot.className='tl-dot active';
+      if(timeEl&&view!=='driver'&&data[s.startKey]){
+        startDispTimer(data[s.startKey],s.timeId);
+      }
+    } else {
+      dot.className='tl-dot';
+      if(timeEl)timeEl.textContent='';
+    }
+  });
+}
+
+function updateDriverUI(phase,data){
+  const show=(id,v)=>{const el=document.getElementById(id);if(el)el.style.display=v?'block':'none';};
+  show('btn-loading',phase==='idle');
+  show('btn-driving',phase==='loading');
+  show('btn-unloading',phase==='driving');
+  show('btn-done',phase==='unloading');
+  const box=document.getElementById('timer-box');
+  if(phase==='loading'&&data.loadingStartTs){
+    box.style.display='block';
+    document.getElementById('timer-lbl').textContent='Час завантаження';
+    startDrvTimer(data.loadingStartTs,'timer-lbl','timer-val');
+  } else if(phase==='unloading'&&data.unloadingStartTs){
+    box.style.display='block';
+    document.getElementById('timer-lbl').textContent='Час розвантаження';
+    startDrvTimer(data.unloadingStartTs,'timer-lbl','timer-val');
+  } else if(phase==='done'){
+    box.style.display='none';
+    stopDrvTimer();
+  } else if(phase==='driving'){
+    box.style.display='none';
+    stopDrvTimer();
+  } else {
+    box.style.display='none';
+  }
+}
+
+// ---- DRIVER ACTIONS ----
+window.driverAction=async function(action){
+  const now=Date.now();
+  const snap=await new Promise(r=>onValue(tripRef,r,{onlyOnce:true}));
+  const data=snap.val()||{};
+  if(action==='loading'){
+    await update(tripRef,{phase:'loading',loadingStartTs:now});
+    startGeo();
+  } else if(action==='driving'){
+    const loadingTime=Math.floor((now-(data.loadingStartTs||now))/1000);
+    await update(tripRef,{phase:'driving',loadingTime,drivingStartTs:now});
+  } else if(action==='unloading'){
+    const tripTime=Math.floor((now-(data.drivingStartTs||now))/1000);
+    await update(tripRef,{phase:'unloading',tripTime,unloadingStartTs:now});
+    stopGeo();
+  } else if(action==='done'){
+    const unloadingTime=Math.floor((now-(data.unloadingStartTs||now))/1000);
+    const totalTime=(data.loadingTime||0)+(data.tripTime||0)+unloadingTime;
+    await update(tripRef,{phase:'done',unloadingTime,totalTime,doneAt:now});
+    stopGeo();
+  }
+};
+
+// ---- PHOTO ----
+window.handlePhoto=async function(){
+  const file=document.getElementById('photo-input').files[0];
+  if(!file){showToast('Виберіть фото');return;}
+  const btn=document.getElementById('photo-submit');
+  btn.textContent='Завантаження...';btn.disabled=true;
+  try{
+    const snap=await new Promise(r=>onValue(tripRef,r,{onlyOnce:true}));
+    const data=snap.val()||{};const od=data.orderData||{};
+    const reader=new FileReader();
+    const photoUrl=await new Promise((res,rej)=>{
+      reader.onload=async e=>{
+        try{
+          const r2=await fetch(AS,{method:'POST',body:JSON.stringify({action:'uploadPhoto',fileData:e.target.result,mimeType:file.type,fileName:`bussy_${order}_${Date.now()}.jpg`})});
+          const j=await r2.json();res(j.fileUrl||'');
+        }catch(err){rej(err);}
+      };
+      reader.readAsDataURL(file);
+    });
+    await fetch(AS,{method:'POST',body:JSON.stringify({action:'saveTrip',orderNumber:order,clientName:od.clientName,clientPhone:od.clientPhone,driverName:od.driverName,service:od.service,from:od.from,to:od.to,distance:od.distance,datetime:od.datetime,amount:od.amount,notes:od.notes,loadingTime:data.loadingTime||0,tripTime:data.tripTime||0,unloadingTime:data.unloadingTime||0,totalTime:data.totalTime||0,photoUrl})});
+    await update(tripRef,{photoUploaded:true,photoUrl});
+    document.getElementById('photo-card').innerHTML='<div class="card"><div class="success-msg">✓ Фото завантажено і дані збережено</div></div>';
+  }catch(e){btn.textContent='Спробувати ще раз';btn.disabled=false;alert('Помилка: '+e.message);}
+};
+
+// ---- COPY CARD ----
+function setupCopyCard(){
+  const btn=document.getElementById('copy-card-btn');
+  if(!btn)return;
+  btn.addEventListener('click',()=>{
+    navigator.clipboard.writeText(CARD.replace(/\s/g,'')).then(()=>{
+      btn.innerHTML='✓ Скопійовано!';
+      setTimeout(()=>{btn.innerHTML='💳 Скопіювати номер картки';},2000);
+    });
+  });
+}
+
+// ---- ACCORDIONS ----
+function setupAccordions(){
+  document.querySelectorAll('.acc-header').forEach(h=>{
+    h.addEventListener('click',()=>h.closest('.acc-item').classList.toggle('open'));
+  });
+  document.querySelector('.acc-item')?.classList.add('open');
+}
+
+// ---- REVIEW ----
+const starLabels=['','😞 Погано','😐 Так собі','🙂 Нормально','😊 Добре','🤩 Відмінно'];
+let ratings={r1:0,r2:0};
+let saveTimer=null;
+let alreadySaved=false;
+const REVIEW_URL='https://script.google.com/macros/s/AKfycbz26c76eIOMhGBwKQ3fvpkwnjxN0pGIik6Iw8n84E-qBgqhMg_EdLH_Vg1fOAkeRFnm/exec';
+
+function setupReview(){}
+
+window.setStar=function(q,val){
+  ratings['r'+q]=val;
+  const stars=document.getElementById('stars'+q)?.children;
+  if(!stars)return;
+  for(let i=0;i<5;i++)stars[i].classList.toggle('on',i<val);
+  stars[val-1].classList.add('pop');
+  setTimeout(()=>stars[val-1].classList.remove('pop'),200);
+  const lbl=document.getElementById('sl'+q);
+  if(lbl)lbl.textContent=starLabels[val];
+  alreadySaved=false;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveReview,1000);
+};
+
+async function saveReview(){
+  if(!ratings.r1&&!ratings.r2)return;
+  if(alreadySaved)return;
+  alreadySaved=true;
+  try{
+    const params=new URLSearchParams({action:'review',orderNum:order,r1:ratings.r1||'',r2:ratings.r2||'',date:new Date().toLocaleString('uk-UA')});
+    await fetch(REVIEW_URL+'?'+params.toString(),{mode:'no-cors'});
+  }catch(e){}
+  if(ratings.r1){const b=document.getElementById('sb1');if(b)b.classList.add('vis');}
+  if(ratings.r2){const b=document.getElementById('sb2');if(b)b.classList.add('vis');}
+}
+
+window.openPromo=function(){document.getElementById('promoOverlay').classList.add('open');};
+window.openShare=function(){document.getElementById('shareOverlay').classList.add('open');};
+window.closeOverlay=function(id){document.getElementById(id).classList.remove('open');};
+window.copyPromo=function(){navigator.clipboard.writeText('BUSSY8').then(()=>showToast('✓ Код BUSSY8 скопійовано!'));};
+window.shareTo=function(target){
+  const SHARE_TEXT='Вантажні перевезення Bussy — подача авто від 500 грн, ціна за 3 кліки, знижка на перше замовлення → '+SHARE_URL;
+  if(target==='telegram')window.open('https://t.me/share/url?url='+encodeURIComponent(SHARE_URL)+'&text='+encodeURIComponent('Вантажні перевезення Bussy — подача авто від 500 грн, ціна за 3 кліки, знижка на перше замовлення'));
+  else if(target==='viber')window.open('viber://forward?text='+encodeURIComponent(SHARE_TEXT));
+  else navigator.clipboard.writeText(SHARE_URL).then(()=>showToast('✓ Посилання скопійовано!'));
+  closeOverlay('shareOverlay');
+};
+window.copyAdminLink=function(role){
+  const url=document.getElementById('url-'+role)?.textContent;
+  if(url)navigator.clipboard.writeText(url).then(()=>showToast('Скопійовано!'));
+};
+</script>
+</head>
+<body>
+
+<nav>
+  <div>
+    <div class="logo-name">Bu<em>ss</em>y</div>
+    <div class="logo-sub">вантажні перевезення у Вінниці</div>
+  </div>
+  <div class="status-pill pill-wait" id="nav-status">Очікує оплати</div>
+</nav>
+
+<div class="order-hero">
+  <div class="order-num" id="order-num">—</div>
+  <div class="order-date" id="order-date"></div>
+</div>
+
+<!-- ДЕТАЛІ -->
+<div class="card">
+  <div class="card-title">📦 Деталі замовлення</div>
+  <div id="details-no-data" class="no-data" style="display:none">Деталі не знайдено</div>
+  <div id="details-content">
+    <div class="d-row" id="row-driver" style="display:none">
+      <div class="d-lbl">Водій</div>
+      <div class="d-val" id="d-driver">—</div>
+    </div>
+    <div class="d-row">
+      <div class="d-lbl">Послуга</div>
+      <div class="d-val" id="d-service">—</div>
+    </div>
+    <div class="d-row">
+      <div class="d-lbl">Звідки</div>
+      <div class="d-val" id="d-from">—</div>
+    </div>
+    <div class="d-row">
+      <div class="d-lbl">Куди</div>
+      <div class="d-val" id="d-to">—</div>
+    </div>
+    <div class="d-row">
+      <div class="d-lbl">Відстань</div>
+      <div class="d-val" id="d-distance">—</div>
+    </div>
+    <div class="d-row">
+      <div class="d-lbl">Дата і час</div>
+      <div class="d-val" id="d-datetime">—</div>
+    </div>
+    <div class="d-row">
+      <div class="d-lbl">Додатково</div>
+      <div class="d-val" id="d-notes">—</div>
+    </div>
+    <div class="d-row" id="row-client">
+      <div class="d-lbl">Клієнт</div>
+      <div class="d-val" id="d-client">—</div>
+    </div>
+    <div class="d-row" id="row-phone">
+      <div class="d-lbl">Телефон</div>
+      <div class="d-val" id="d-phone">—</div>
+    </div>
+    <div class="d-row" id="row-amount" style="display:none">
+      <div class="d-lbl">Сума</div>
+      <div class="d-val" id="d-amount">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT SECTION (client only) -->
+<div id="payment-section" style="display:none">
+  <div class="amount-bar">
+    <div class="amount-lbl">До сплати</div>
+    <div class="amount-val" id="d-amount-bar">—</div>
+  </div>
+  <button class="copy-card-btn" id="copy-card-btn">💳 Скопіювати номер картки</button>
+  <div class="card-number-display">5168 7451 3289 4343</div>
+  <div class="card-hint">Відкрийте банківський додаток і переведіть суму</div>
+
+  <div class="accordion">
+    <div class="acc-item open">
+      <div class="acc-header">
+        <div class="acc-title"><span>✅</span> Що відбудеться після оплати</div>
+        <div class="acc-arrow">▼</div>
+      </div>
+      <div class="acc-body">
+        <ul class="acc-steps-num">
+          <li><div class="acc-step-num">1</div><div>Надішліть скрін підтвердження оплати логісту — <a href="tel:+380665179774" style="color:var(--y);font-weight:700">+38 (066) 517-97-74</a></div></li>
+          <li><div class="acc-step-num">2</div><div>Логіст підтвердить замовлення і повідомить ім'я водія та орієнтовний час прибуття</div></li>
+          <li><div class="acc-step-num">3</div><div>Водій приїде у вказаний час. Будьте на місці і готові до завантаження. Ця сторінка автоматично стане трекером вашої поїздки</div></li>
+        </ul>
+        <div class="acc-note">💡 Якщо є зміни в замовленні — телефонуйте одразу, не чекайте дня виконання</div>
+      </div>
+    </div>
+    <div class="acc-item">
+      <div class="acc-header">
+        <div class="acc-title"><span>↩️</span> Повернення коштів при скасуванні</div>
+        <div class="acc-arrow">▼</div>
+      </div>
+      <div class="acc-body">
+        <ul class="acc-list">
+          <li><div class="acc-dot"></div><div>Більше ніж за 4 години — повне повернення коштів</div></li>
+          <li><div class="acc-dot"></div><div>Від 2 до 4 годин — повертаємо 50% від суми</div></li>
+          <li><div class="acc-dot"></div><div>Менше ніж за 2 години — без повернення</div></li>
+          <li><div class="acc-dot"></div><div>Водій вже виїхав — без повернення</div></li>
+          <li><div class="acc-dot"></div><div>Після початку завантаження — без повернення</div></li>
+        </ul>
+        <div class="acc-note">Для скасування телефонуйте логісту: <a href="tel:+380665179774" style="color:var(--y);font-weight:700">+38 (066) 517-97-74</a></div>
+      </div>
+    </div>
+    <div class="acc-item">
+      <div class="acc-header">
+        <div class="acc-title"><span>⏱</span> Якщо водій запізнюється</div>
+        <div class="acc-arrow">▼</div>
+      </div>
+      <div class="acc-body">
+        <ul class="acc-list">
+          <li><div class="acc-dot"></div><div>До 10 хвилин — небажана ситуація, логіст вас попередить</div></li>
+          <li><div class="acc-dot"></div><div>15–30 хвилин — ви отримаєте знижку 10% від суми замовлення</div></li>
+          <li><div class="acc-dot"></div><div>Більше 1 години без попередження — замовлення скасовується, повертаємо повну суму + компенсація 400 ₴</div></li>
+        </ul>
+        <div class="acc-note">Якщо водій запізнюється і не виходить на зв'язок — одразу телефонуйте логісту</div>
+      </div>
+    </div>
+    <div class="acc-item">
+      <div class="acc-header">
+        <div class="acc-title"><span>📸</span> Якщо вантаж пошкоджено</div>
+        <div class="acc-arrow">▼</div>
+      </div>
+      <div class="acc-body">
+        <ul class="acc-list">
+          <li><div class="acc-dot"></div><div>Зробіть фото вантажу до того як водій почне завантаження — це головний доказ стану речей</div></li>
+          <li><div class="acc-dot"></div><div>Зробіть фото після розвантаження — одразу, до від'їзду водія</div></li>
+          <li><div class="acc-dot"></div><div>Пошкодження до 500 ₴ — компенсуємо за рахунок водія</div></li>
+          <li><div class="acc-dot"></div><div>Пошкодження 500–3000 ₴ — 50% компенсуємо ми, розглядаємо індивідуально</div></li>
+          <li><div class="acc-dot"></div><div>Більше 3000 ₴ — індивідуальний розгляд з фото-доказами</div></li>
+        </ul>
+        <div class="acc-warn">⚠️ Без фото до і після — претензії щодо пошкоджень не розглядаються. Фіксуйте стан речей обов'язково</div>
+      </div>
+    </div>
+    <div class="acc-item">
+      <div class="acc-header">
+        <div class="acc-title"><span>📋</span> Важливо знати</div>
+        <div class="acc-arrow">▼</div>
+      </div>
+      <div class="acc-body">
+        <ul class="acc-list">
+          <li><div class="acc-dot"></div><div><b>Вантаж під вашу відповідальність.</b> Якщо ви самостійно пакуєте речі — за пошкодження через неправильне пакування ми не несемо відповідальності</div></li>
+          <li><div class="acc-dot"></div><div><b>Будьте присутні на місці.</b> Клієнт або довірена особа має бути під час завантаження і розвантаження</div></li>
+          <li><div class="acc-dot"></div><div><b>Оплата — тільки через сервіс.</b> Якщо водій просить оплатити готівкою напряму — відмовляйте і повідомте нам</div></li>
+          <li><div class="acc-dot"></div><div><b>Заборонені вантажі.</b> Зброя, вибухові речовини, заборонені хімічні речовини — до перевезення не приймаються</div></li>
+          <li><div class="acc-dot"></div><div><b>Якщо щось пішло не так</b> — не з'ясовуйте стосунки з водієм напряму, телефонуйте логісту. Ми вирішимо</div></li>
+        </ul>
+        <div class="acc-note">Телефон логіста: <a href="tel:+380665179774" style="color:var(--y);font-weight:700">+38 (066) 517-97-74</a> · Щодня 8:00–19:00</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="ft-logo">Bu<em>ss</em>y</div>
+    <div style="text-align:right">
+      <div class="ft-hint">Питання?</div>
+      <a href="tel:+380665179774" class="ft-phone">+38 (066) 517-97-74</a>
+    </div>
+  </footer>
+</div>
+
+<!-- TRACKING SECTION -->
+<div id="tracking-section" style="display:none">
+
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">📍 Хід поїздки</div>
+    <div class="tl">
+      <div class="tl-item" id="tl-loading">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-label">Завантаження</div><div class="tl-time" id="tl-time-loading"></div></div>
+      </div>
+      <div class="tl-item" id="tl-driving">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-label">В дорозі</div><div class="tl-time" id="tl-time-driving"></div></div>
+      </div>
+      <div class="tl-item" id="tl-unloading">
+        <div class="tl-left"><div class="tl-dot"></div></div>
+        <div class="tl-content"><div class="tl-label">Розвантаження</div><div class="tl-time" id="tl-time-unloading"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-wrap" id="map-wrap">
+    <div class="map-title">🗺 Водій на карті</div>
+    <div id="map"></div>
+  </div>
+
+  <div class="card" id="summary-card" style="display:none;margin-top:12px">
+    <div class="card-title">⏱ Підсумок поїздки</div>
+    <div class="sum-grid">
+      <div class="sum-item"><div class="sum-lbl">Завантаження</div><div class="sum-val" id="sum-loading">—</div></div>
+      <div class="sum-item"><div class="sum-lbl">Поїздка</div><div class="sum-val" id="sum-trip">—</div></div>
+      <div class="sum-item"><div class="sum-lbl">Розвантаження</div><div class="sum-val" id="sum-unload">—</div></div>
+      <div class="sum-item sum-total"><div class="sum-lbl">Загальний час</div><div class="sum-val" id="sum-total">—</div></div>
+    </div>
+  </div>
+
+  <!-- REVIEW INLINE (client only) -->
+  <div id="review-section" style="display:none">
+    <div class="card" style="margin-top:12px">
+      <div class="card-title">Оцініть роботу водія</div>
+      <div class="stars-row">
+        <div id="stars1">
+          <span class="star" onclick="setStar(1,1)">★</span><span class="star" onclick="setStar(1,2)">★</span><span class="star" onclick="setStar(1,3)">★</span><span class="star" onclick="setStar(1,4)">★</span><span class="star" onclick="setStar(1,5)">★</span>
+        </div>
+        <div class="star-lbl" id="sl1"></div>
+      </div>
+      <div class="sent-badge" id="sb1">✓ Збережено</div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="card-title">Оцініть сервіс Bussy</div>
+      <div class="stars-row">
+        <div id="stars2">
+          <span class="star" onclick="setStar(2,1)">★</span><span class="star" onclick="setStar(2,2)">★</span><span class="star" onclick="setStar(2,3)">★</span><span class="star" onclick="setStar(2,4)">★</span><span class="star" onclick="setStar(2,5)">★</span>
+        </div>
+        <div class="star-lbl" id="sl2"></div>
+      </div>
+      <div class="sent-badge" id="sb2">✓ Збережено</div>
+    </div>
+    <div style="margin:0 12px">
+      <button class="btn-promo" onclick="openPromo()">🎁 Ваша знижка на наступне замовлення <span>›</span></button>
+      <button class="btn-share" onclick="openShare()">📤 Порадити друзям <span>›</span></button>
+    </div>
+    <footer>
+      <div class="ft-logo">Bu<em>ss</em>y</div>
+      <div style="text-align:right">
+        <div class="ft-hint">Питання?</div>
+        <a href="tel:+380665179774" class="ft-phone">+38 (066) 517-97-74</a>
+      </div>
+    </footer>
+  </div>
+
+</div>
+
+<!-- DRIVER SECTION -->
+<div id="driver-section" style="display:none">
+  <div class="timer-box" id="timer-box">
+    <div class="timer-lbl" id="timer-lbl">Час завантаження</div>
+    <div class="timer-val" id="timer-val">00:00</div>
+  </div>
+  <button id="btn-loading" class="drv-btn btn-y" onclick="driverAction('loading')">Завантаження</button>
+  <button id="btn-driving" class="drv-btn btn-dk" onclick="driverAction('driving')">Початок поїздки</button>
+  <button id="btn-unloading" class="drv-btn btn-y" onclick="driverAction('unloading')">Розвантаження</button>
+  <button id="btn-done" class="drv-btn btn-rd" onclick="driverAction('done')">Завершити поїздку</button>
+</div>
+
+<!-- PHOTO (driver) -->
+<div id="photo-card" style="display:none">
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">📷 Фото після поїздки</div>
+    <label class="photo-drop" for="photo-input">
+      <div style="font-size:32px;margin-bottom:6px">📷</div>
+      <div style="font-size:13px;color:var(--t2)">Натисни щоб вибрати фото з галереї або зробити нове</div>
+    </label>
+    <input type="file" id="photo-input" accept="image/*" style="display:none">
+    <button class="photo-submit" id="photo-submit" onclick="handlePhoto()">Завантажити і завершити</button>
+  </div>
+</div>
+
+<!-- ADMIN LINKS -->
+<div id="admin-section" style="display:none">
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">🔗 Посилання поїздки</div>
+    <div class="al-item" onclick="copyAdminLink('client')">
+      <div><div class="al-role">Клієнт</div><div class="al-url" id="url-client"></div></div>
+      <span style="color:var(--y);font-size:18px">⧉</span>
+    </div>
+    <div class="al-item" onclick="copyAdminLink('driver')">
+      <div><div class="al-role">Водій</div><div class="al-url" id="url-driver"></div></div>
+      <span style="color:var(--y);font-size:18px">⧉</span>
+    </div>
+  </div>
+  <div class="card" id="summary-card-admin" style="display:none;margin-top:12px">
+    <div class="card-title">⏱ Підсумок поїздки</div>
+    <div class="sum-grid">
+      <div class="sum-item"><div class="sum-lbl">Завантаження</div><div class="sum-val" id="sum-loading-a">—</div></div>
+      <div class="sum-item"><div class="sum-lbl">Поїздка</div><div class="sum-val" id="sum-trip-a">—</div></div>
+      <div class="sum-item"><div class="sum-lbl">Розвантаження</div><div class="sum-val" id="sum-unload-a">—</div></div>
+      <div class="sum-item sum-total"><div class="sum-lbl">Загальний час</div><div class="sum-val" id="sum-total-a">—</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAP for driver -->
+<div class="map-wrap" id="map-wrap-driver" style="display:none;margin:12px 12px 0">
+  <div class="map-title">🗺 Ваше місцезнаходження</div>
+  <div id="map-driver" style="height:240px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line)"></div>
+</div>
+
+<!-- POPUPS -->
+<div class="overlay" id="promoOverlay" onclick="closeOverlay('promoOverlay')">
+  <div class="popup" onclick="event.stopPropagation()">
+    <div class="popup-drag"></div>
+    <div class="popup-ico">🎁</div>
+    <div class="popup-ttl">Ваша знижка 8%</div>
+    <div class="popup-sub">На наступне замовлення Bussy.<br>Дійсна 60 днів. Назвіть код логісту при замовленні.</div>
+    <div class="promo-box">
+      <div class="promo-code">BUSSY8</div>
+      <button class="promo-btn" onclick="copyPromo()">Скопіювати</button>
+    </div>
+    <div class="promo-note">Знижка поширюється на базову вартість замовлення</div>
+    <button class="popup-close" onclick="closeOverlay('promoOverlay')">Закрити</button>
+  </div>
+</div>
+<div class="overlay" id="shareOverlay" onclick="closeOverlay('shareOverlay')">
+  <div class="popup" onclick="event.stopPropagation()">
+    <div class="popup-drag"></div>
+    <div class="popup-ico">📤</div>
+    <div class="popup-ttl">Порадити Bussy друзям</div>
+    <div class="popup-sub">Поділіться посиланням — друзі отримають той самий якісний сервіс</div>
+    <div class="share-options">
+      <button class="share-opt" onclick="shareTo('telegram')">
+        <span class="share-opt-ico">✈️</span>
+        <div><div class="share-opt-text">Telegram</div><div class="share-opt-sub">Надіслати посилання у Telegram</div></div>
+      </button>
+      <button class="share-opt" onclick="shareTo('viber')">
+        <span class="share-opt-ico">💬</span>
+        <div><div class="share-opt-text">Viber</div><div class="share-opt-sub">Надіслати посилання у Viber</div></div>
+      </button>
+      <button class="share-opt" onclick="shareTo('copy')">
+        <span class="share-opt-ico">🔗</span>
+        <div><div class="share-opt-text">Скопіювати посилання</div><div class="share-opt-sub">Вставити в будь-який месенджер</div></div>
+      </button>
+    </div>
+    <button class="popup-close" onclick="closeOverlay('shareOverlay')">Закрити</button>
+  </div>
+</div>
+
+<div class="copied-toast" id="toast"></div>
+</body>
+</html>
