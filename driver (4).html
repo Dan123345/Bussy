@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bussy Driver</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ffc900'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='18' fill='%230f0f0f'%3EB%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCJIykKHjRfUBW1hBnlHJQ5GRolqC7Qrz0&callback=onMapsReady" async defer></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--y:#ffc900;--yl:#fffaeb;--yd:#e6b400;--blk:#0f0f0f;--bg:#f7f7f7;--card:#fff;--line:#ebebeb;--t2:#888;--t3:#bbb;--r:20px;--rs:13px;--green:#00c853;--red:#f44336}
+html,body{height:100%;font-family:'Manrope',sans-serif;background:var(--bg);color:var(--blk);-webkit-font-smoothing:antialiased}
+body{max-width:430px;margin:0 auto;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:300;background:var(--card);padding:13px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.logo-name{font-family:'Unbounded',sans-serif;font-weight:900;font-size:19px;letter-spacing:-.5px}
+.logo-name em{color:var(--y);font-style:normal}
+.driver-badge{background:var(--blk);color:var(--y);font-family:'Unbounded',sans-serif;font-size:10px;font-weight:900;padding:4px 10px;border-radius:100px}
+
+.status-bar{background:var(--y);padding:10px 20px;display:flex;align-items:center;justify-content:space-between}
+.status-online{display:flex;align-items:center;gap:8px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700}
+.pulse{width:10px;height:10px;border-radius:50%;background:var(--blk);position:relative}
+.pulse::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--blk);animation:pulse 1.5s infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.8);opacity:0}}
+.driver-name-tag{font-size:12px;font-weight:700;color:rgba(0,0,0,.6)}
+
+/* LOGIN */
+.login-wrap{padding:24px 20px}
+.login-card{background:var(--card);border-radius:var(--r);padding:28px 22px;text-align:center}
+.login-ico{font-size:48px;margin-bottom:16px}
+.login-ttl{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;margin-bottom:8px}
+.login-sub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.5}
+.pin-inputs{display:flex;gap:10px;justify-content:center;margin-bottom:20px}
+.pin-input{width:52px;height:60px;border:2px solid var(--line);border-radius:var(--rs);font-size:24px;font-weight:700;text-align:center;outline:none;font-family:'Unbounded',sans-serif;background:var(--bg);transition:border-color .2s}
+.pin-input:focus{border-color:var(--y);background:var(--card)}
+.pin-input.err{border-color:var(--red)}
+.btn-login{width:100%;background:var(--y);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;padding:16px;border-radius:100px;border:none;cursor:pointer}
+.pin-err{font-size:12px;color:var(--red);font-weight:600;margin-top:10px;display:none}
+
+/* TABS */
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--line)}
+.tab{flex:1;padding:13px 0;text-align:center;font-size:13px;font-weight:700;color:var(--t2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab.on{color:var(--blk);border-bottom-color:var(--y)}
+
+/* NOTIFICATION BANNER */
+.notif-banner{background:var(--yl);border:1.5px solid var(--yd);border-radius:var(--rs);margin:12px 12px 0;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.notif-ico{font-size:20px;flex-shrink:0}
+.notif-text{flex:1;font-size:12px;font-weight:600;line-height:1.4}
+.notif-text span{display:block;font-size:11px;color:var(--t2);font-weight:500;margin-top:2px}
+.btn-notif{background:var(--y);border:none;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;padding:8px 12px;border-radius:100px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+
+/* ORDER CARDS - Available */
+.orders-wrap{padding:12px}
+.empty-state{background:var(--card);border-radius:var(--r);padding:40px 20px;text-align:center;margin-top:8px}
+.empty-ico{font-size:40px;margin-bottom:12px}
+.empty-ttl{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--t2);line-height:1.5}
+
+.order-card{background:var(--card);border-radius:var(--r);padding:18px;margin-bottom:10px;border:2px solid transparent;animation:slideIn .3s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.order-card.new-order{border-color:var(--y)}
+.order-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.order-num-tag{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--t2);background:var(--bg);padding:4px 10px;border-radius:100px}
+.order-price-block{text-align:right}
+.order-price{font-family:'Unbounded',sans-serif;font-size:24px;font-weight:900}
+.order-price-lbl{font-size:10px;color:var(--t2);font-weight:600}
+.route-block{background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:10px}
+.route-line{display:flex;align-items:flex-start;gap:10px;padding:5px 0}
+.route-line+.route-line{border-top:1px solid var(--line)}
+.route-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.route-dot.a{background:var(--blk)}
+.route-dot.b{background:var(--y);border:2px solid var(--blk)}
+.route-addr{font-size:13px;font-weight:600;line-height:1.3}
+.route-lbl{font-size:10px;color:var(--t2)}
+.dist-pill{display:inline-flex;align-items:center;gap:5px;background:var(--yl);border:1px solid var(--yd);border-radius:100px;padding:4px 12px;font-size:12px;font-weight:700;margin-bottom:10px}
+.chips-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{background:var(--bg);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:600;flex:1;min-width:90px}
+.chip-lbl{font-size:10px;color:var(--t2);margin-bottom:2px}
+.extras-block{background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;font-weight:600}
+.extras-lbl{font-size:10px;color:var(--t2);margin-bottom:2px}
+.btn-take{width:100%;background:var(--y);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;padding:15px;border-radius:100px;border:none;cursor:pointer;transition:all .15s}
+.btn-take:active{transform:scale(.97);background:var(--yd)}
+.btn-take:disabled{opacity:.5;cursor:not-allowed}
+
+/* MY ORDERS */
+.my-card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:10px;cursor:pointer;transition:border-color .2s;border:2px solid transparent}
+.my-card:active{background:#f9f9f9}
+.my-card.status-pending{border-left:4px solid var(--y)}
+.my-card.status-planned{border-left:4px solid #2196f3}
+.my-card.status-done{border-left:4px solid #4caf50;opacity:.85}
+.my-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.my-card-num{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--t2)}
+.my-card-price{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900}
+.my-card-route{font-size:13px;color:var(--t2);margin-bottom:6px;line-height:1.4}
+.my-card-date{font-size:12px;color:var(--t3);margin-bottom:8px}
+.status-pill{display:inline-block;font-size:11px;font-weight:700;padding:4px 12px;border-radius:100px}
+.pill-pending{background:var(--yl);color:var(--yd)}
+.pill-planned{background:#e3f2fd;color:#1565c0}
+.pill-done{background:#e8f5e9;color:#2e7d32}
+.btn-start-trip{display:block;width:100%;margin-top:12px;padding:13px;background:var(--blk);color:var(--y);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;border:none;border-radius:100px;cursor:pointer;text-align:center;transition:opacity .15s}
+.btn-start-trip:active{opacity:.8}
+
+/* EARNINGS */
+.earnings-bar{background:var(--blk);border-radius:var(--r);padding:18px 20px;margin:12px 12px 0}
+.earn-lbl{font-size:11px;color:#888;font-weight:600;margin-bottom:4px}
+.earn-val{font-family:'Unbounded',sans-serif;font-size:32px;font-weight:900;color:var(--y)}
+.earn-sub{font-size:11px;color:#888;margin-top:4px}
+
+/* TRIP SCREEN */
+.trip-screen{padding:0 0 40px}
+.trip-back{display:flex;align-items:center;gap:8px;padding:14px 20px;font-size:13px;font-weight:700;cursor:pointer;color:var(--t2);border-bottom:1px solid var(--line);background:var(--card)}
+.trip-back:active{background:var(--bg)}
+.trip-order-hero{background:var(--blk);padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+.trip-order-num{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:900;color:var(--y)}
+.trip-order-status{font-size:11px;color:#888}
+.section-head{padding:14px 18px 0;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.section-head-ico{font-size:15px}
+.section-head-ttl{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700}
+.detail-card{background:var(--card);border-radius:var(--r);margin:10px 12px 0;overflow:hidden}
+.d-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 16px;border-bottom:1px solid var(--line);gap:12px}
+.d-row:last-child{border-bottom:none}
+.d-lbl{font-size:12px;color:var(--t2);font-weight:500;flex-shrink:0}
+.d-val{font-size:13px;font-weight:600;text-align:right;line-height:1.4}
+.d-val.phone-link{color:#2196f3;text-decoration:none}
+
+/* TIMELINE */
+.tl-card{background:var(--card);border-radius:var(--r);margin:10px 12px 0;padding:16px 18px}
+.tl{display:flex;flex-direction:column}
+.tl-item{display:flex;gap:14px}
+.tl-left{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0}
+.tl-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);background:#fff;transition:all .3s;flex-shrink:0}
+.tl-dot.active{background:var(--y);border-color:var(--y);box-shadow:0 0 0 4px rgba(255,201,0,.2)}
+.tl-dot.done{background:var(--green);border-color:var(--green)}
+.tl-line{width:2px;flex:1;background:var(--line);min-height:24px}
+.tl-content{padding-bottom:18px}
+.tl-label{font-size:14px;font-weight:600}
+.tl-time{font-size:13px;color:var(--t2);margin-top:2px;font-variant-numeric:tabular-nums}
+
+/* MAP */
+.map-wrap{margin:10px 12px 0}
+.map-lbl{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+#driverMap{height:220px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line)}
+
+/* TIMER */
+.timer-box{background:var(--blk);border-radius:var(--r);margin:10px 12px 0;padding:18px;text-align:center;display:none}
+.timer-lbl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.timer-val{font-family:'Unbounded',sans-serif;font-size:44px;font-weight:900;color:var(--y);font-variant-numeric:tabular-nums;letter-spacing:2px}
+
+/* DRIVER BUTTONS */
+.drv-btn{display:none;width:calc(100% - 24px);margin:10px 12px 0;padding:18px;border:none;border-radius:100px;font-size:16px;font-weight:900;font-family:'Unbounded',sans-serif;cursor:pointer;transition:transform .1s}
+.drv-btn:active{transform:scale(.97)}
+.btn-y{background:var(--y);color:var(--blk)}
+.btn-dk{background:var(--blk);color:#fff}
+.btn-rd{background:#ef4444;color:#fff}
+
+/* PHOTO */
+.photo-card{background:var(--card);border-radius:var(--r);margin:10px 12px 0;padding:16px 18px;display:none}
+.photo-drop{border:2px dashed var(--line);border-radius:14px;padding:24px;text-align:center;cursor:pointer}
+.photo-drop:hover{border-color:var(--y)}
+.photo-count{font-size:12px;color:var(--t2);margin-top:6px;display:none;text-align:center}
+.photo-submit{width:100%;margin-top:12px;padding:14px;background:var(--blk);color:#fff;border:none;border-radius:100px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif}
+.success-msg{background:#e8f5ed;color:#2d7d46;padding:14px;border-radius:12px;font-size:14px;font-weight:700;text-align:center}
+
+/* SUMMARY */
+.sum-card{background:var(--card);border-radius:var(--r);margin:10px 12px 0;padding:16px 18px;display:none}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sum-item{background:var(--bg);border-radius:12px;padding:12px}
+.sum-item-lbl{font-size:11px;color:var(--t2);margin-bottom:4px}
+.sum-item-val{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.sum-total{background:var(--y);grid-column:1/-1}
+
+/* DIALOG */
+.dialog-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.dialog-overlay.open{opacity:1;pointer-events:all}
+.dialog{background:var(--card);border-radius:24px 24px 0 0;padding:28px 22px 40px;width:100%;max-width:430px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.dialog-overlay.open .dialog{transform:translateY(0)}
+.dialog-drag{width:40px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 20px}
+.dialog-ttl{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:900;margin-bottom:6px}
+.dialog-sub{font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.5}
+.dialog-price-box{background:var(--y);border-radius:var(--rs);padding:16px;text-align:center;margin-bottom:20px}
+.dialog-price{font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900}
+.dialog-price-lbl{font-size:11px;color:rgba(0,0,0,.5);font-weight:600;margin-top:2px}
+.dialog-btns{display:flex;gap:10px}
+.btn-cancel{flex:1;background:var(--bg);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;padding:15px;border-radius:100px;border:none;cursor:pointer}
+.btn-confirm{flex:2;background:var(--blk);color:var(--y);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;padding:15px;border-radius:100px;border:none;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--blk);color:#fff;font-size:13px;font-weight:600;padding:12px 22px;border-radius:100px;z-index:1000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo-name">Bu<em>ss</em>y</div>
+  <div class="driver-badge">DRIVER</div>
+</nav>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-ico">🚛</div>
+      <div class="login-ttl">Панель водія</div>
+      <div class="login-sub">Введіть ваш PIN-код для входу</div>
+      <div class="pin-inputs">
+        <input class="pin-input" type="tel" maxlength="1" id="p0" inputmode="numeric">
+        <input class="pin-input" type="tel" maxlength="1" id="p1" inputmode="numeric">
+        <input class="pin-input" type="tel" maxlength="1" id="p2" inputmode="numeric">
+        <input class="pin-input" type="tel" maxlength="1" id="p3" inputmode="numeric">
+      </div>
+      <div class="pin-err" id="pinErr">Невірний PIN. Спробуй ще раз.</div>
+      <button class="btn-login" onclick="doLogin()">Увійти</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN SCREEN -->
+<div id="mainScreen" style="display:none">
+  <div class="status-bar">
+    <div class="status-online"><div class="pulse"></div><span>Онлайн</span></div>
+    <div class="driver-name-tag" id="driverNameTag"></div>
+  </div>
+  <div class="notif-banner" id="notifBanner" style="display:none">
+    <div class="notif-ico">🔔</div>
+    <div class="notif-text">Увімкни сповіщення<span>Щоб отримувати пуш про нові поїздки</span></div>
+    <button class="btn-notif" onclick="requestNotif()">Увімкнути</button>
+  </div>
+  <div class="tabs">
+    <div class="tab on" id="tab-available" onclick="switchTab('available')">Доступні</div>
+    <div class="tab" id="tab-my" onclick="switchTab('my')">Мої поїздки</div>
+  </div>
+  <div id="availableTab" class="orders-wrap"><div id="availableList"></div></div>
+  <div id="myTab" style="display:none">
+    <div class="earnings-bar">
+      <div class="earn-lbl">Зароблено сьогодні</div>
+      <div class="earn-val" id="todayEarnings">0 ₴</div>
+      <div class="earn-sub" id="todayCount">0 виконаних замовлень</div>
+    </div>
+    <div class="orders-wrap"><div id="myList"></div></div>
+  </div>
+</div>
+
+<!-- TRIP SCREEN -->
+<div id="tripScreen" style="display:none">
+  <div class="trip-back" onclick="goBack()">← Назад до замовлень</div>
+  <div class="trip-order-hero">
+    <div class="trip-order-num" id="trip-order-num">—</div>
+    <div class="trip-order-status" id="trip-order-status">—</div>
+  </div>
+
+  <div class="detail-card">
+    <div class="section-head"><span class="section-head-ico">📦</span><div class="section-head-ttl">Деталі замовлення</div></div>
+    <div class="d-row"><div class="d-lbl">Послуга</div><div class="d-val" id="t-service">—</div></div>
+    <div class="d-row"><div class="d-lbl">Звідки</div><div class="d-val" id="t-from">—</div></div>
+    <div class="d-row"><div class="d-lbl">Куди</div><div class="d-val" id="t-to">—</div></div>
+    <div class="d-row"><div class="d-lbl">Відстань (км)</div><div class="d-val" id="t-distance">—</div></div>
+    <div class="d-row"><div class="d-lbl">Дата і час</div><div class="d-val" id="t-datetime">—</div></div>
+    <div class="d-row"><div class="d-lbl">Додатково</div><div class="d-val" id="t-extras">—</div></div>
+    <div class="d-row" id="t-client-row" style="display:none"><div class="d-lbl">Клієнт</div><div class="d-val" id="t-client">—</div></div>
+    <div class="d-row" id="t-phone-row" style="display:none">
+      <div class="d-lbl">Телефон</div>
+      <a class="d-val phone-link" id="t-phone" href="#">—</a>
+    </div>
+  </div>
+
+  <div class="tl-card">
+    <div class="section-head" style="padding:0 0 12px"><span class="section-head-ico">📍</span><div class="section-head-ttl">Хід поїздки</div></div>
+    <div class="tl">
+      <div class="tl-item" id="tl-loading">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-label">Завантаження</div><div class="tl-time" id="tt-loading"></div></div>
+      </div>
+      <div class="tl-item" id="tl-driving">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-label">В дорозі</div><div class="tl-time" id="tt-driving"></div></div>
+      </div>
+      <div class="tl-item" id="tl-unloading">
+        <div class="tl-left"><div class="tl-dot"></div></div>
+        <div class="tl-content"><div class="tl-label">Розвантаження</div><div class="tl-time" id="tt-unloading"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-wrap" id="mapWrap" style="display:none">
+    <div class="map-lbl">🗺 Ваше місцезнаходження</div>
+    <div id="driverMap"></div>
+  </div>
+
+  <div class="timer-box" id="timerBox">
+    <div class="timer-lbl" id="timerLbl">Час завантаження</div>
+    <div class="timer-val" id="timerVal">00:00</div>
+  </div>
+
+  <button id="btn-loading" class="drv-btn btn-y" onclick="driverAction('loading')">Завантаження</button>
+  <button id="btn-driving" class="drv-btn btn-dk" onclick="driverAction('driving')">Початок поїздки</button>
+  <button id="btn-unloading" class="drv-btn btn-y" onclick="driverAction('unloading')">Розвантаження</button>
+  <button id="btn-done" class="drv-btn btn-rd" onclick="driverAction('done')">Завершити поїздку</button>
+
+  <div class="sum-card" id="sumCard">
+    <div class="section-head" style="padding:0 0 12px"><span class="section-head-ico">⏱</span><div class="section-head-ttl">Підсумок поїздки</div></div>
+    <div class="sum-grid">
+      <div class="sum-item"><div class="sum-item-lbl">Завантаження</div><div class="sum-item-val" id="s-loading">—</div></div>
+      <div class="sum-item"><div class="sum-item-lbl">Поїздка</div><div class="sum-item-val" id="s-trip">—</div></div>
+      <div class="sum-item"><div class="sum-item-lbl">Розвантаження</div><div class="sum-item-val" id="s-unload">—</div></div>
+      <div class="sum-item sum-total"><div class="sum-item-lbl">Загальний час</div><div class="sum-item-val" id="s-total">—</div></div>
+    </div>
+  </div>
+
+  <div class="photo-card" id="photoCard">
+    <div class="section-head" style="padding:0 0 12px"><span class="section-head-ico">📷</span><div class="section-head-ttl">Фото після поїздки</div></div>
+    <label class="photo-drop" for="photoInput">
+      <div style="font-size:32px;margin-bottom:6px">📷</div>
+      <div style="font-size:13px;color:var(--t2)">Вибрати фото з галереї або зробити нове (можна кілька)</div>
+    </label>
+    <div class="photo-count" id="photoCount"></div>
+    <input type="file" id="photoInput" accept="image/*" multiple style="display:none">
+    <button class="photo-submit" id="photoSubmit" onclick="handlePhoto()">Завантажити і завершити</button>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="dialog-overlay" id="confirmDialog">
+  <div class="dialog">
+    <div class="dialog-drag"></div>
+    <div class="dialog-ttl">Взяти замовлення?</div>
+    <div class="dialog-sub">Після підтвердження замовлення зникне у інших водіїв і з'явиться у "Мої поїздки"</div>
+    <div class="dialog-price-box">
+      <div class="dialog-price" id="dialogPrice">—</div>
+      <div class="dialog-price-lbl">ваша винагорода</div>
+    </div>
+    <div class="dialog-btns">
+      <button class="btn-cancel" onclick="closeDialog()">Скасувати</button>
+      <button class="btn-confirm" id="confirmBtn" onclick="confirmTake()">Підтвердити ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDRbyjk3nnbWXgZCcW7PAq_BQcqerY7paE",
+  authDomain: "bussy-ee650.firebaseapp.com",
+  databaseURL: "https://bussy-ee650-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bussy-ee650",
+  storageBucket: "bussy-ee650.firebasestorage.app",
+  messagingSenderId: "841941953587",
+  appId: "1:841941953787:web:c99c94dc971f604960c746"
+};
+
+// PIN-коди водіїв — додавай нових тут
+const DRIVERS = {
+  '1121': { name: 'Василь', id: 'vasyl' },
+  '1122': { name: 'Дмитро', id: 'dmytro' },
+  // '1123': { name: 'Іван', id: 'ivan' },
+};
+
+const TG_TOKEN = '8782277242:AAH6fNfjqO9M5PbbrdGTqA_PlkynXaJJEsg';
+const ADMIN_CHAT_ID = '438820953';
+const AS = 'https://script.google.com/macros/s/AKfycbzAIKfIxUuuhlawwQGQoF3LZ__51743PD5uIckh8Pa0LvJCM_z7U8hFg8ZOuHUjS9M/exec';
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.database();
+
+let currentDriver = null;
+let pendingOrderId = null;
+let currentTripId = null;
+let currentTripData = null;
+let map = null, marker = null, geoId = null;
+let drvTimerInt = null, dispTimerInt = null;
+let mapsReady = false;
+let knownOrderIds = new Set();
+
+function pad(n){return String(n).padStart(2,'0');}
+function fmt(s){if(!s&&s!==0)return'—';s=Math.round(Math.max(0,s));const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return h>0?`${pad(h)}:${pad(m)}:${pad(sc)}`:`${pad(m)}:${pad(sc)}`;}
+function el(id){return document.getElementById(id);}
+function setT(id,v){const e=el(id);if(e)e.textContent=v||'—';}
+function show(id,v){const e=el(id);if(e)e.style.display=v?'block':'none';}
+
+// MAPS
+window.onMapsReady = function(){ mapsReady = true; };
+function initMap(lat,lng){
+  if(!mapsReady||map)return;
+  map=new google.maps.Map(el('driverMap'),{center:{lat,lng},zoom:15,mapTypeControl:false,streetViewControl:false,fullscreenControl:false});
+  marker=new google.maps.Marker({position:{lat,lng},map,icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" fill="#ffc900" stroke="white" stroke-width="3"/><text x="22" y="29" text-anchor="middle" font-size="20">🚛</text></svg>'),scaledSize:new google.maps.Size(44,44),anchor:new google.maps.Point(22,22)}});
+}
+function moveMap(lat,lng){if(!map){initMap(lat,lng);return;}marker.setPosition({lat,lng});map.panTo({lat,lng});}
+
+// GEO
+let wakeLock=null;
+async function startGeo(){
+  try{if('wakeLock' in navigator)wakeLock=await navigator.wakeLock.request('screen');}catch(e){}
+  if(!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(pos=>pushGeo(pos.coords),null,{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+  geoId=navigator.geolocation.watchPosition(pos=>pushGeo(pos.coords),e=>console.warn(e),{enableHighAccuracy:true,maximumAge:0,timeout:15000});
+}
+function pushGeo(c){
+  if(!currentTripId)return;
+  const{latitude:lat,longitude:lng,accuracy:acc}=c;
+  db.ref('trips/'+currentTripId).update({lat,lng,acc:Math.round(acc),lastGeo:Date.now()});
+  moveMap(lat,lng);
+}
+function stopGeo(){
+  if(geoId!==null){navigator.geolocation.clearWatch(geoId);geoId=null;}
+  if(wakeLock){wakeLock.release();wakeLock=null;}
+}
+
+// TIMERS
+function startDrvTimer(startMs){
+  if(drvTimerInt)clearInterval(drvTimerInt);
+  const tick=()=>{const e=el('timerVal');if(e)e.textContent=fmt(Math.floor((Date.now()-startMs)/1000));};
+  tick();drvTimerInt=setInterval(tick,1000);
+}
+function stopDrvTimer(){if(drvTimerInt){clearInterval(drvTimerInt);drvTimerInt=null;}}
+function startDispTimer(startMs,elId){
+  if(dispTimerInt)clearInterval(dispTimerInt);
+  const tick=()=>{const e=el(elId);if(e)e.textContent=fmt(Math.floor((Date.now()-startMs)/1000));};
+  tick();dispTimerInt=setInterval(tick,1000);
+}
+function stopDispTimer(){if(dispTimerInt){clearInterval(dispTimerInt);dispTimerInt=null;}}
+
+// LOGIN
+document.querySelectorAll('.pin-input').forEach((inp,i)=>{
+  inp.addEventListener('input',()=>{
+    inp.value=inp.value.replace(/\D/g,'');
+    if(inp.value&&i<3)el('p'+(i+1)).focus();
+    if(i===3&&getPin().length===4)doLogin();
+  });
+  inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!inp.value&&i>0)el('p'+(i-1)).focus();});
+});
+function getPin(){return[0,1,2,3].map(i=>el('p'+i).value).join('');}
+function doLogin(){
+  const pin=getPin();
+  const driver=DRIVERS[pin];
+  if(!driver){
+    document.querySelectorAll('.pin-input').forEach(e=>e.classList.add('err'));
+    el('pinErr').style.display='block';
+    setTimeout(()=>{
+      document.querySelectorAll('.pin-input').forEach(e=>{e.classList.remove('err');e.value='';});
+      el('p0').focus();el('pinErr').style.display='none';
+    },1200);
+    return;
+  }
+  currentDriver=driver;
+  sessionStorage.setItem('bussy_driver',JSON.stringify(driver));
+  showMain();
+}
+
+function showMain(){
+  el('loginScreen').style.display='none';
+  el('mainScreen').style.display='block';
+  el('tripScreen').style.display='none';
+  el('driverNameTag').textContent=currentDriver.name;
+  checkNotifPermission();
+  subscribeOrders();
+  checkHash();
+}
+
+// HASH ROUTING
+function checkHash(){
+  const hash=window.location.hash;
+  if(hash.startsWith('#trip/')){
+    const tripId=hash.replace('#trip/','');
+    openTrip(tripId);
+  }
+}
+window.addEventListener('hashchange',()=>{if(currentDriver)checkHash();});
+function goBack(){
+  window.location.hash='';
+  el('mainScreen').style.display='block';
+  el('tripScreen').style.display='none';
+  currentTripId=null;
+  stopGeo();stopDrvTimer();stopDispTimer();
+  if(currentTripListener){currentTripListener();currentTripListener=null;}
+}
+
+// TABS
+function switchTab(tab){
+  el('tab-available').classList.toggle('on',tab==='available');
+  el('tab-my').classList.toggle('on',tab==='my');
+  el('availableTab').style.display=tab==='available'?'block':'none';
+  el('myTab').style.display=tab==='my'?'block':'none';
+  if(tab==='my')renderEarnings();
+}
+
+// NOTIFICATIONS
+function checkNotifPermission(){
+  if(!('Notification' in window)){show('notifBanner',false);return;}
+  show('notifBanner',Notification.permission==='default');
+}
+async function requestNotif(){
+  const perm=await Notification.requestPermission();
+  show('notifBanner',perm==='default');
+  if(perm==='granted')showToast('Сповіщення увімкнено ✅');
+}
+function sendNotif(title,body){
+  if(Notification.permission==='granted'){
+    new Notification(title,{body,icon:'/favicon.ico',badge:'/favicon.ico',vibrate:[200,100,200]});
+  }
+  playAlert();
+}
+function playAlert(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,.15,.3].forEach(delay=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=880;o.type='sine';
+      g.gain.setValueAtTime(0,ctx.currentTime+delay);
+      g.gain.linearRampToValueAtTime(.35,ctx.currentTime+delay+.05);
+      g.gain.linearRampToValueAtTime(0,ctx.currentTime+delay+.2);
+      o.start(ctx.currentTime+delay);o.stop(ctx.currentTime+delay+.3);
+    });
+  }catch(e){}
+}
+
+// SUBSCRIBE ORDERS
+function subscribeOrders(){
+  db.ref('orders').orderByChild('createdAt').on('value',snap=>{
+    const data=snap.val()||{};
+    const all=Object.entries(data);
+    // Available = status 'new'
+    const available=all.filter(([,o])=>o.status==='new');
+    // Mine = taken by me (any status except new)
+    const mine=all.filter(([,o])=>o.takenBy===currentDriver.id&&o.status!=='new');
+
+    // Detect new orders for notification
+    available.forEach(([id,o])=>{
+      if(!knownOrderIds.has(id)){
+        if(knownOrderIds.size>0){// not first load
+          sendNotif('🚛 Нове замовлення!',`${o.from} → ${o.to} · ${o.driverPay} ₴`);
+        }
+        knownOrderIds.add(id);
+      }
+    });
+
+    renderAvailable(available);
+    renderMine(mine);
+  });
+}
+
+function renderAvailable(orders){
+  const list=el('availableList');
+  if(!orders.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-ico">📭</div><div class="empty-ttl">Немає замовлень</div><div class="empty-sub">Нові поїздки з'являться тут автоматично</div></div>`;
+    return;
+  }
+  list.innerHTML=orders.map(([id,o])=>{
+    const time=o.createdAt?new Date(o.createdAt).toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}):'';
+    return`<div class="order-card new-order">
+      <div class="order-header">
+        <div><div class="order-num-tag">${o.orderNum||id}</div><div style="font-size:11px;color:var(--t3);margin-top:4px">${time}</div></div>
+        <div class="order-price-block"><div class="order-price">${o.driverPay} ₴</div><div class="order-price-lbl">ваша винагорода</div></div>
+      </div>
+      <div class="route-block">
+        <div class="route-line"><div class="route-dot a"></div><div><div class="route-lbl">Звідки</div><div class="route-addr">${o.from}</div></div></div>
+        <div class="route-line"><div class="route-dot b"></div><div><div class="route-lbl">Куди</div><div class="route-addr">${o.to}</div></div></div>
+      </div>
+      ${o.distance?`<div class="dist-pill">📍 ${o.distance}</div>`:''}
+      <div class="chips-row">
+        ${o.services?`<div class="chip"><div class="chip-lbl">Що везти</div>${o.services}</div>`:''}
+        ${o.date?`<div class="chip"><div class="chip-lbl">Дата і час</div>${o.date}${o.time?', '+o.time:''}</div>`:''}
+      </div>
+      ${o.extras&&o.extras!=='—'?`<div class="extras-block"><div class="extras-lbl">Додатково</div>${o.extras}</div>`:''}
+      <button class="btn-take" onclick="openDialog('${id}','${o.driverPay}')">Взяти замовлення</button>
+    </div>`;
+  }).join('');
+}
+
+function renderMine(orders){
+  const list=el('myList');
+  if(!orders.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-ico">📋</div><div class="empty-ttl">Поїздок поки немає</div><div class="empty-sub">Тут будуть твої замовлення</div></div>`;
+    return;
+  }
+  // Sort: pending first, then planned by date, then done
+  const sorted=[
+    ...orders.filter(([,o])=>o.status==='taken'),
+    ...orders.filter(([,o])=>o.status==='confirmed').sort((a,b)=>(a[1].createdAt||0)-(b[1].createdAt||0)),
+    ...orders.filter(([,o])=>o.status==='done').sort((a,b)=>(b[1].doneAt||0)-(a[1].doneAt||0)),
+  ];
+  list.innerHTML=sorted.map(([id,o])=>{
+    const statusClass={taken:'status-pending',confirmed:'status-planned',done:'status-done'}[o.status]||'status-pending';
+    const pillClass={taken:'pill-pending',confirmed:'pill-planned',done:'pill-done'}[o.status]||'pill-pending';
+    const pillText={taken:'⏳ Очікує підтвердження',confirmed:'📅 Заплановано',done:'✅ Виконано'}[o.status]||o.status;
+    const showBtn=o.status==='confirmed';
+    const tripDate=o.date?`📅 ${o.date}${o.time?', '+o.time:''}`:'';
+    return`<div class="my-card ${statusClass}" onclick="openTrip('${id}')">
+      <div class="my-card-top">
+        <div class="my-card-num">${o.orderNum||id}</div>
+        <div class="my-card-price">${o.driverPay} ₴</div>
+      </div>
+      <div class="my-card-route">${o.from} → ${o.to}</div>
+      ${o.services?`<div style="font-size:12px;color:var(--t2);margin-bottom:4px">${o.services}</div>`:''}
+      ${tripDate?`<div class="my-card-date">${tripDate}</div>`:''}
+      <span class="status-pill ${pillClass}">${pillText}</span>
+      ${showBtn?`<button class="btn-start-trip" onclick="event.stopPropagation();openTrip('${id}')">🚛 Розпочати поїздку</button>`:''}
+    </div>`;
+  }).join('');
+  renderEarnings(orders);
+}
+
+function renderEarnings(orders){
+  if(!orders)return;
+  const today=new Date().toDateString();
+  const todayDone=orders.filter(([,o])=>{
+    if(o.status!=='done')return false;
+    return o.doneAt&&new Date(o.doneAt).toDateString()===today;
+  });
+  const total=todayDone.reduce((s,[,o])=>s+(parseInt(o.driverPay)||0),0);
+  setT('todayEarnings',total+' ₴');
+  setT('todayCount',todayDone.length+' виконаних сьогодні');
+}
+
+// TAKE ORDER
+function openDialog(orderId,price){
+  pendingOrderId=orderId;
+  el('dialogPrice').textContent=price+' ₴';
+  el('confirmDialog').classList.add('open');
+}
+function closeDialog(){el('confirmDialog').classList.remove('open');pendingOrderId=null;}
+async function confirmTake(){
+  if(!pendingOrderId)return;
+  const btn=el('confirmBtn');
+  btn.disabled=true;btn.textContent='...';
+  try{
+    const snap=await db.ref('orders/'+pendingOrderId).once('value');
+    const order=snap.val();
+    if(!order||order.status!=='new'){
+      closeDialog();showToast('Замовлення вже взяли 😅');
+      btn.disabled=false;btn.textContent='Підтвердити ✓';return;
+    }
+    await db.ref('orders/'+pendingOrderId).update({status:'taken',takenBy:currentDriver.id,takenByName:currentDriver.name,takenAt:Date.now()});
+    closeDialog();
+    showToast('Замовлення твоє! 🎉');
+    switchTab('my');
+    // Notify admin via Telegram
+    const text=`✅ *Замовлення взято!*\n*${order.orderNum||pendingOrderId}*\n\n🚗 Водій: ${currentDriver.name} (ID: ${currentDriver.id})\n📦 ${order.services||'—'}\n🛣️ ${order.from} → ${order.to}\n💰 ${order.driverPay} ₴`;
+    fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:ADMIN_CHAT_ID,text,parse_mode:'Markdown'})}).catch(()=>{});
+  }catch(e){showToast('Помилка. Спробуй ще раз.');}
+  btn.disabled=false;btn.textContent='Підтвердити ✓';
+}
+
+// TRIP SCREEN
+let currentTripListener=null;
+function openTrip(tripId){
+  currentTripId=tripId;
+  window.location.hash='trip/'+tripId;
+  el('mainScreen').style.display='none';
+  el('tripScreen').style.display='block';
+  // Load trip data
+  if(currentTripListener){currentTripListener();currentTripListener=null;}
+  currentTripListener=db.ref('orders/'+tripId).on('value',snap=>{
+    const data=snap.val();
+    if(!data)return;
+    currentTripData=data;
+    renderTripScreen(data);
+  });
+}
+
+function renderTripScreen(o){
+  setT('trip-order-num',o.orderNum||currentTripId);
+  const statusLabels={taken:'Очікує підтвердження',confirmed:'Заплановано',done:'Виконано'};
+  setT('trip-order-status',statusLabels[o.status]||o.status);
+
+  setT('t-service',o.services);
+  setT('t-from',o.from);
+  setT('t-to',o.to);
+  setT('t-distance',o.distance);
+  setT('t-extras',o.extras);
+  const dt=o.date?(o.date+(o.time?', '+o.time:'')):'—';
+  setT('t-datetime',dt==='—'?'—':dt);
+
+  // Client info - show only if confirmed or done
+  if(o.clientName||(o.status==='confirmed'||o.status==='done')){
+    if(o.clientName){setT('t-client',o.clientName);show('t-client-row',true);}
+    if(o.clientPhone){
+      const ph=el('t-phone');if(ph){ph.textContent=o.clientPhone;ph.href='tel:'+o.clientPhone;}
+      show('t-phone-row',true);
+    }
+  }
+
+  // Trip phase buttons
+  const phase=o.tripPhase||'idle';
+  updateTripUI(phase,o);
+
+  // Timeline
+  updateTimeline(phase,o);
+
+  // Map - show during driving
+  const showMap=phase==='driving';
+  show('mapWrap',showMap);
+  if(showMap&&o.lat&&o.lng)moveMap(o.lat,o.lng);
+  if(showMap&&!map&&mapsReady)initMap(o.lat||49.2328,o.lng||28.4682);
+
+  // Summary
+  if(phase==='done'){
+    el('sumCard').style.display='block';
+    setT('s-loading',fmt(o.loadingTime));
+    setT('s-trip',fmt(o.tripTime));
+    setT('s-unload',fmt(o.unloadingTime));
+    setT('s-total',fmt(o.totalTime));
+    if(!o.photoUploaded)el('photoCard').style.display='block';
+  }
+}
+
+function updateTripUI(phase,o){
+  ['btn-loading','btn-driving','btn-unloading','btn-done'].forEach(id=>show(id,false));
+  const box=el('timerBox');
+
+  // Only show action buttons if status is confirmed (admin approved)
+  if(o.status!=='confirmed'&&o.status!=='done'&&!(o.tripPhase)){
+    box.style.display='none';stopDrvTimer();return;
+  }
+  if(o.status==='done'){box.style.display='none';stopDrvTimer();return;}
+
+  show('btn-loading',phase==='idle');
+  show('btn-driving',phase==='loading');
+  show('btn-unloading',phase==='driving');
+  show('btn-done',phase==='unloading');
+
+  if(phase==='loading'&&o.loadingStartTs){
+    box.style.display='block';setT('timerLbl','Час завантаження');startDrvTimer(o.loadingStartTs);
+  } else if(phase==='driving'&&o.drivingStartTs){
+    box.style.display='block';setT('timerLbl','Час в дорозі');startDrvTimer(o.drivingStartTs);
+  } else if(phase==='unloading'&&o.unloadingStartTs){
+    box.style.display='block';setT('timerLbl','Час розвантаження');startDrvTimer(o.unloadingStartTs);
+  } else {
+    box.style.display='none';stopDrvTimer();
+  }
+}
+
+function updateTimeline(phase,o){
+  const phases=['idle','loading','driving','unloading','done'];
+  const pi=phases.indexOf(phase);
+  const steps=[
+    {id:'tl-loading',phase:'loading',doneKey:'loadingTime',startKey:'loadingStartTs',timeId:'tt-loading'},
+    {id:'tl-driving',phase:'driving',doneKey:'tripTime',startKey:'drivingStartTs',timeId:'tt-driving'},
+    {id:'tl-unloading',phase:'unloading',doneKey:'unloadingTime',startKey:'unloadingStartTs',timeId:'tt-unloading'},
+  ];
+  if(phase==='done'){stopDispTimer();}
+  steps.forEach(s=>{
+    const e=el(s.id);if(!e)return;
+    const dot=e.querySelector('.tl-dot');
+    const te=el(s.timeId);
+    const si=phases.indexOf(s.phase);
+    if(phase==='done'||si<pi){
+      dot.className='tl-dot done';if(te&&o[s.doneKey]!==undefined)te.textContent=fmt(o[s.doneKey]);
+    } else if(s.phase===phase){
+      dot.className='tl-dot active';
+      if(te&&o[s.startKey])startDispTimer(o[s.startKey],s.timeId);
+    } else {dot.className='tl-dot';if(te)te.textContent='';}
+  });
+}
+
+// DRIVER ACTIONS on trip
+async function driverAction(action){
+  if(!currentTripId)return;
+  const now=Date.now();
+  const snap=await db.ref('orders/'+currentTripId).once('value');
+  const o=snap.val()||{};
+  const phase=o.tripPhase||'idle';
+  const update={};
+
+  if(action==='loading'){update.tripPhase='loading';update.loadingStartTs=now;startGeo();}
+  else if(action==='driving'){update.tripPhase='driving';update.loadingTime=Math.floor((now-(o.loadingStartTs||now))/1000);update.drivingStartTs=now;}
+  else if(action==='unloading'){update.tripPhase='unloading';update.tripTime=Math.floor((now-(o.drivingStartTs||now))/1000);update.unloadingStartTs=now;stopGeo();}
+  else if(action==='done'){
+    const ut=Math.floor((now-(o.unloadingStartTs||now))/1000);
+    const total=(o.loadingTime||0)+(o.tripTime||0)+ut;
+    update.tripPhase='done';update.unloadingTime=ut;update.totalTime=total;update.doneAt=now;update.status='done';
+    stopGeo();stopDrvTimer();
+  }
+  await db.ref('orders/'+currentTripId).update(update);
+}
+
+// PHOTO
+el('photoInput').addEventListener('change',()=>{
+  const cnt=el('photoCount');
+  const n=el('photoInput').files.length;
+  cnt.style.display=n>0?'block':'none';
+  cnt.textContent='Обрано фото: '+n;
+});
+
+async function handlePhoto(){
+  const inp=el('photoInput');
+  if(!inp.files.length){showToast('Виберіть фото');return;}
+  const btn=el('photoSubmit');btn.textContent='Завантаження...';btn.disabled=true;
+  try{
+    const urls=[];
+    for(const file of inp.files){
+      const reader=new FileReader();
+      const url=await new Promise((res,rej)=>{
+        reader.onload=async e=>{
+          try{const r=await fetch(AS,{method:'POST',body:JSON.stringify({action:'uploadPhoto',fileData:e.target.result,mimeType:file.type,fileName:`bussy_${currentTripId}_${Date.now()}.jpg`})});const j=await r.json();res(j.fileUrl||'');}catch(err){rej(err);}
+        };
+        reader.readAsDataURL(file);
+      });
+      urls.push(url);
+    }
+    await db.ref('orders/'+currentTripId).update({photoUploaded:true,photoUrl:urls.join(', ')});
+    el('photoCard').innerHTML='<div class="success-msg">✓ Фото завантажено!</div>';
+  }catch(e){btn.textContent='Спробувати ще раз';btn.disabled=false;alert('Помилка: '+e.message);}
+}
+
+function showToast(msg){
+  const t=el('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// AUTO LOGIN
+const saved=sessionStorage.getItem('bussy_driver');
+if(saved){try{currentDriver=JSON.parse(saved);showMain();}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentDriver)checkNotifPermission();});
+</script>
+</body>
+</html>
