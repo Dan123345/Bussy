@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bussy Driver</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ffc900'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='18' fill='%230f0f0f'%3EB%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--y:#ffc900;--yl:#fffaeb;--yd:#e6b400;--blk:#0f0f0f;--bg:#f7f7f7;--card:#fff;--line:#ebebeb;--t2:#888;--t3:#bbb;--r:20px;--rs:13px;--green:#00c853;--red:#f44336}
+html,body{height:100%;font-family:'Manrope',sans-serif;background:var(--bg);color:var(--blk);-webkit-font-smoothing:antialiased}
+body{max-width:430px;margin:0 auto;min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:300;background:var(--card);padding:13px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.logo-name{font-family:'Unbounded',sans-serif;font-weight:900;font-size:19px;letter-spacing:-.5px}
+.logo-name em{color:var(--y);font-style:normal}
+.driver-badge{background:var(--blk);color:var(--y);font-family:'Unbounded',sans-serif;font-size:10px;font-weight:900;padding:4px 10px;border-radius:100px;letter-spacing:.3px}
+
+/* STATUS BAR */
+.status-bar{background:var(--y);padding:10px 20px;display:flex;align-items:center;justify-content:space-between}
+.status-online{display:flex;align-items:center;gap:8px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700}
+.pulse{width:10px;height:10px;border-radius:50%;background:var(--blk);position:relative}
+.pulse::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--blk);animation:pulse 1.5s infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.8);opacity:0}}
+.driver-name-tag{font-size:12px;font-weight:600;color:rgba(0,0,0,.6)}
+
+/* LOGIN */
+.login-wrap{padding:24px 20px}
+.login-card{background:var(--card);border-radius:var(--r);padding:28px 22px;text-align:center}
+.login-ico{font-size:48px;margin-bottom:16px}
+.login-ttl{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;margin-bottom:8px}
+.login-sub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.5}
+.pin-inputs{display:flex;gap:10px;justify-content:center;margin-bottom:20px}
+.pin-input{width:52px;height:60px;border:2px solid var(--line);border-radius:var(--rs);font-size:24px;font-weight:700;text-align:center;outline:none;font-family:'Unbounded',sans-serif;background:var(--bg);transition:border-color .2s}
+.pin-input:focus{border-color:var(--y);background:var(--card)}
+.pin-input.err{border-color:var(--red)}
+.btn-login{width:100%;background:var(--y);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;padding:16px;border-radius:100px;border:none;cursor:pointer;transition:background .15s}
+.btn-login:active{background:var(--yd)}
+.pin-err{font-size:12px;color:var(--red);font-weight:600;margin-top:10px;display:none}
+
+/* ORDERS LIST */
+.orders-wrap{padding:12px}
+.section-ttl{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin:0 4px 10px}
+.empty-state{background:var(--card);border-radius:var(--r);padding:40px 20px;text-align:center;margin-top:8px}
+.empty-ico{font-size:40px;margin-bottom:12px}
+.empty-ttl{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--t2);line-height:1.5}
+
+/* ORDER CARD */
+.order-card{background:var(--card);border-radius:var(--r);padding:18px;margin-bottom:10px;border:2px solid transparent;transition:border-color .2s;animation:slideIn .3s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.order-card.new-order{border-color:var(--y);animation:newPop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes newPop{0%{transform:scale(.95);opacity:0}100%{transform:scale(1);opacity:1}}
+.order-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.order-num{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--t2);background:var(--bg);padding:4px 10px;border-radius:100px}
+.order-time{font-size:11px;color:var(--t3);font-weight:500}
+.order-price{font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:var(--blk);text-align:right}
+.order-price-lbl{font-size:10px;color:var(--t2);font-weight:600;text-align:right}
+.route-block{background:var(--bg);border-radius:var(--rs);padding:14px;margin-bottom:12px}
+.route-line{display:flex;align-items:flex-start;gap:10px;padding:5px 0}
+.route-line:first-child{padding-top:0}
+.route-line:last-child{padding-bottom:0;border-bottom:none}
+.route-line+.route-line{border-top:1px solid var(--line)}
+.route-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.route-dot.a{background:var(--blk)}
+.route-dot.b{background:var(--y);border:2px solid var(--blk)}
+.route-addr{font-size:13px;font-weight:600;line-height:1.4}
+.route-lbl{font-size:10px;color:var(--t2);font-weight:500}
+.dist-pill{display:inline-flex;align-items:center;gap:5px;background:var(--yl);border:1px solid var(--yd);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--blk);margin-bottom:12px}
+.info-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.info-chip{background:var(--bg);border-radius:var(--rs);padding:8px 12px;font-size:12px;font-weight:600;flex:1;min-width:100px}
+.info-chip-lbl{font-size:10px;color:var(--t2);margin-bottom:2px}
+.btn-take{width:100%;background:var(--y);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;padding:15px;border-radius:100px;border:none;cursor:pointer;transition:all .15s;position:relative}
+.btn-take:active{transform:scale(.97);background:var(--yd)}
+.btn-take:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-loading::after{content:'';position:absolute;right:18px;top:50%;transform:translateY(-50%);width:16px;height:16px;border:2px solid rgba(0,0,0,.2);border-top-color:var(--blk);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* MY ORDERS tab */
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--line);padding:0 20px}
+.tab{flex:1;padding:13px 0;text-align:center;font-size:13px;font-weight:700;color:var(--t2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab.on{color:var(--blk);border-bottom-color:var(--y)}
+
+/* MY ORDERS list */
+.my-order-card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:8px;border-left:4px solid var(--y)}
+.moc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.moc-num{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--t2)}
+.moc-price{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900}
+.moc-route{font-size:13px;color:var(--t2);line-height:1.5}
+.status-badge{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;margin-top:8px}
+.status-taken{background:#e8f5e9;color:#2e7d32}
+.status-pending{background:var(--yl);color:var(--yd)}
+.status-confirmed{background:#e3f2fd;color:#1565c0}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--blk);color:#fff;font-size:13px;font-weight:600;padding:12px 22px;border-radius:100px;z-index:1000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* NOTIFICATION PROMPT */
+.notif-banner{background:var(--yl);border:1.5px solid var(--yd);border-radius:var(--rs);margin:12px 12px 0;padding:14px 16px;display:flex;align-items:center;gap:12px}
+.notif-ico{font-size:22px;flex-shrink:0}
+.notif-text{flex:1;font-size:12px;font-weight:600;line-height:1.4}
+.notif-text span{display:block;font-size:11px;color:var(--t2);font-weight:500;margin-top:2px}
+.btn-notif{background:var(--y);border:none;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;padding:8px 14px;border-radius:100px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+
+/* CONFIRM DIALOG */
+.dialog-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.dialog-overlay.open{opacity:1;pointer-events:all}
+.dialog{background:var(--card);border-radius:24px 24px 0 0;padding:28px 22px 40px;width:100%;max-width:430px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.dialog-overlay.open .dialog{transform:translateY(0)}
+.dialog-ttl{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:900;margin-bottom:6px}
+.dialog-sub{font-size:13px;color:var(--t2);margin-bottom:22px;line-height:1.5}
+.dialog-order-sum{background:var(--y);border-radius:var(--rs);padding:16px;text-align:center;margin-bottom:20px}
+.dialog-price{font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900}
+.dialog-price-lbl{font-size:11px;color:rgba(0,0,0,.5);font-weight:600;margin-top:2px}
+.dialog-btns{display:flex;gap:10px}
+.btn-cancel{flex:1;background:var(--bg);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;padding:15px;border-radius:100px;border:none;cursor:pointer}
+.btn-confirm{flex:2;background:var(--blk);color:var(--y);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;padding:15px;border-radius:100px;border:none;cursor:pointer}
+
+@media(min-width:900px){body{max-width:430px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo-name">Bu<em>ss</em>y</div>
+  <div class="driver-badge">DRIVER</div>
+</nav>
+
+<!-- Login screen -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-ico">🚛</div>
+      <div class="login-ttl">Панель водія</div>
+      <div class="login-sub">Введіть ваш PIN-код для входу</div>
+      <div class="pin-inputs">
+        <input class="pin-input" type="tel" maxlength="1" id="p0" inputmode="numeric" pattern="[0-9]*">
+        <input class="pin-input" type="tel" maxlength="1" id="p1" inputmode="numeric" pattern="[0-9]*">
+        <input class="pin-input" type="tel" maxlength="1" id="p2" inputmode="numeric" pattern="[0-9]*">
+        <input class="pin-input" type="tel" maxlength="1" id="p3" inputmode="numeric" pattern="[0-9]*">
+      </div>
+      <div class="pin-err" id="pinErr">Невірний PIN. Спробуй ще раз.</div>
+      <button class="btn-login" onclick="doLogin()">Увійти</button>
+    </div>
+  </div>
+</div>
+
+<!-- Driver main screen -->
+<div id="mainScreen" style="display:none">
+  <div class="status-bar">
+    <div class="status-online">
+      <div class="pulse"></div>
+      <span>Онлайн</span>
+    </div>
+    <div class="driver-name-tag" id="driverNameTag"></div>
+  </div>
+
+  <!-- Notification banner -->
+  <div class="notif-banner" id="notifBanner" style="display:none">
+    <div class="notif-ico">🔔</div>
+    <div class="notif-text">
+      Увімкни сповіщення
+      <span>Щоб отримувати пуш про нові поїздки</span>
+    </div>
+    <button class="btn-notif" onclick="requestNotif()">Увімкнути</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab on" id="tab-available" onclick="switchTab('available')">Доступні</div>
+    <div class="tab" id="tab-my" onclick="switchTab('my')">Мої замовлення</div>
+  </div>
+
+  <!-- Available orders -->
+  <div id="availableTab" class="orders-wrap">
+    <div id="ordersList"></div>
+  </div>
+
+  <!-- My orders -->
+  <div id="myTab" class="orders-wrap" style="display:none">
+    <div id="myOrdersList"></div>
+  </div>
+</div>
+
+<!-- Confirm dialog -->
+<div class="dialog-overlay" id="confirmDialog">
+  <div class="dialog">
+    <div class="dialog-ttl">Взяти замовлення?</div>
+    <div class="dialog-sub">Після підтвердження замовлення зникне у інших водіїв</div>
+    <div class="dialog-order-sum">
+      <div class="dialog-price" id="dialogPrice">—</div>
+      <div class="dialog-price-lbl">ваша винагорода</div>
+    </div>
+    <div class="dialog-btns">
+      <button class="btn-cancel" onclick="closeDialog()">Скасувати</button>
+      <button class="btn-confirm" id="confirmBtn" onclick="confirmTake()">Підтвердити ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// НАЛАШТУВАННЯ — ЗАПОВНИ ЦЕ!
+// ══════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDRbyjk3nnbWXgZCcW7PAq_BQcqerY7paE",
+  authDomain: "bussy-ee650.firebaseapp.com",
+  databaseURL: "https://bussy-ee650-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bussy-ee650",
+  storageBucket: "bussy-ee650.firebasestorage.app",
+  messagingSenderId: "841941953587",
+  appId: "1:841941953587:web:c99c94dc971f604960c746"
+};
+
+// PIN-коди водіїв — додавай нових тут
+const DRIVERS = {
+  '1121': { name: 'Василь', id: 'vasyl' },
+  '1122': { name: 'Дмитро', id: 'dmytro' },
+  // '1123': { name: 'Іван', id: 'ivan' },
+  // '1124': { name: 'Олег', id: 'oleg' },
+};
+
+const TG_TOKEN = '8782277242:AAH6fNfjqO9M5PbbrdGTqA_PlkynXaJJEsg';
+const ADMIN_CHAT_ID = '438820953';
+// ══════════════════════════════════════════
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.database();
+
+let currentDriver = null;
+let pendingOrderId = null;
+let myOrders = [];
+let allOrders = {};
+
+// ── LOGIN ──
+document.querySelectorAll('.pin-input').forEach((inp, i) => {
+  inp.addEventListener('input', () => {
+    inp.value = inp.value.replace(/\D/g, '');
+    if (inp.value && i < 3) document.getElementById('p' + (i + 1)).focus();
+    if (i === 3 && getPin().length === 4) doLogin();
+  });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !inp.value && i > 0) {
+      document.getElementById('p' + (i - 1)).focus();
+    }
+  });
+});
+
+function getPin() {
+  return [0, 1, 2, 3].map(i => document.getElementById('p' + i).value).join('');
+}
+
+function doLogin() {
+  const pin = getPin();
+  const driver = DRIVERS[pin];
+  if (!driver) {
+    document.querySelectorAll('.pin-input').forEach(el => el.classList.add('err'));
+    document.getElementById('pinErr').style.display = 'block';
+    setTimeout(() => {
+      document.querySelectorAll('.pin-input').forEach(el => { el.classList.remove('err'); el.value = ''; });
+      document.getElementById('p0').focus();
+    }, 1000);
+    return;
+  }
+  currentDriver = driver;
+  sessionStorage.setItem('bussy_driver', JSON.stringify(driver));
+  showMain();
+}
+
+function showMain() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainScreen').style.display = 'block';
+  document.getElementById('driverNameTag').textContent = currentDriver.name;
+  checkNotifPermission();
+  loadOrders();
+  loadMyOrders();
+}
+
+// ── NOTIFICATION ──
+function checkNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    document.getElementById('notifBanner').style.display = 'flex';
+  }
+}
+
+function requestNotif() {
+  Notification.requestPermission().then(p => {
+    document.getElementById('notifBanner').style.display = 'none';
+    if (p === 'granted') showToast('Сповіщення увімкнено! 🔔');
+  });
+}
+
+function sendNotification(title, body) {
+  if (Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '/favicon.ico', badge: '/favicon.ico', vibrate: [200, 100, 200] });
+  }
+}
+
+// ── TABS ──
+function switchTab(tab) {
+  document.getElementById('tab-available').classList.toggle('on', tab === 'available');
+  document.getElementById('tab-my').classList.toggle('on', tab === 'my');
+  document.getElementById('availableTab').style.display = tab === 'available' ? 'block' : 'none';
+  document.getElementById('myTab').style.display = tab === 'my' ? 'block' : 'none';
+}
+
+// ── LOAD ORDERS ──
+function loadOrders() {
+  db.ref('orders').on('value', snap => {
+    const data = snap.val() || {};
+    const prev = Object.keys(allOrders);
+    const now = Object.keys(data).filter(k => data[k].status === 'new');
+
+    // detect new orders for notification
+    now.forEach(id => {
+      if (!prev.includes(id)) {
+        sendNotification('🚛 Нове замовлення Bussy!', `${data[id].from} → ${data[id].to} · ${data[id].driverPay} ₴`);
+        playAlert();
+      }
+    });
+
+    allOrders = data;
+    renderOrders(data);
+  });
+}
+
+function loadMyOrders() {
+  db.ref('orders').on('value', snap => {
+    const data = snap.val() || {};
+    myOrders = Object.entries(data).filter(([, o]) => o.takenBy === currentDriver.id);
+    renderMyOrders(myOrders);
+  });
+}
+
+function renderOrders(data) {
+  const list = document.getElementById('ordersList');
+  const available = Object.entries(data).filter(([, o]) => o.status === 'new');
+
+  if (!available.length) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-ico">☕</div>
+      <div class="empty-ttl">Нових замовлень немає</div>
+      <div class="empty-sub">Як тільки з'явиться нове замовлення — ти отримаєш сповіщення</div>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = available.map(([id, o]) => `
+    <div class="order-card" id="card-${id}">
+      <div class="order-header">
+        <div class="order-num">${o.orderNum || id}</div>
+        <div>
+          <div class="order-price">${o.driverPay} ₴</div>
+          <div class="order-price-lbl">ваша винагорода</div>
+        </div>
+      </div>
+      <div class="route-block">
+        <div class="route-line">
+          <div class="route-dot a"></div>
+          <div>
+            <div class="route-lbl">Звідки</div>
+            <div class="route-addr">${o.from}</div>
+          </div>
+        </div>
+        <div class="route-line">
+          <div class="route-dot b"></div>
+          <div>
+            <div class="route-lbl">Куди</div>
+            <div class="route-addr">${o.to}</div>
+          </div>
+        </div>
+      </div>
+      ${o.distance ? `<div class="dist-pill">📍 ${o.distance}</div>` : ''}
+      <div class="info-row">
+        ${o.services ? `<div class="info-chip"><div class="info-chip-lbl">Що везти</div>${o.services}</div>` : ''}
+        ${o.date ? `<div class="info-chip"><div class="info-chip-lbl">Дата</div>${o.date}${o.time ? ', ' + o.time : ''}</div>` : ''}
+      </div>
+      ${o.extras && o.extras !== '—' ? `<div class="info-chip" style="margin-bottom:14px;display:block"><div class="info-chip-lbl">Додатково</div>${o.extras}</div>` : ''}
+      <button class="btn-take" onclick="openDialog('${id}', '${o.driverPay}')">Взяти замовлення</button>
+    </div>
+  `).join('');
+}
+
+function renderMyOrders(orders) {
+  const list = document.getElementById('myOrdersList');
+  if (!orders.length) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-ico">📋</div>
+      <div class="empty-ttl">Ще немає замовлень</div>
+      <div class="empty-sub">Тут будуть замовлення які ти взяв</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML = orders.map(([id, o]) => {
+    const orderNum = (o.orderNum||id).replace(/[^a-zA-Z0-9\-_]/g,'');
+    const tripUrl = 'https://bussy.mobi/trip.html?order=' + orderNum + '&view=driver';
+    return `
+    <div class="my-order-card">
+      <div class="moc-header">
+        <div class="moc-num">${o.orderNum || id}</div>
+        <div class="moc-price">${o.driverPay} ₴</div>
+      </div>
+      <div class="moc-route">${o.from} → ${o.to}</div>
+      ${o.services ? `<div style="font-size:12px;color:var(--t2);margin-top:4px">${o.services}</div>` : ''}
+      ${o.date ? `<div style="font-size:12px;color:var(--t2);margin-top:2px">📅 ${o.date}${o.time ? ', '+o.time : ''}</div>` : ''}
+      <div class="status-badge ${o.status === 'confirmed' ? 'status-confirmed' : 'status-taken'}">
+        ${o.status === 'confirmed' ? '✅ Підтверджено' : '⏳ Очікує підтвердження адміна'}
+      </div>
+      ${o.status === 'confirmed' ? `<a href="${tripUrl}" style="display:block;margin-top:10px;width:100%;background:var(--y);color:var(--blk);font-family:Unbounded,sans-serif;font-size:12px;font-weight:700;padding:12px;border-radius:100px;text-align:center;text-decoration:none">🚛 Розпочати поїздку →</a>` : ''}
+    </div>
+  `}).join('');
+}
+
+// ── TAKE ORDER ──
+function openDialog(orderId, price) {
+  pendingOrderId = orderId;
+  document.getElementById('dialogPrice').textContent = price + ' ₴';
+  document.getElementById('confirmDialog').classList.add('open');
+}
+
+function closeDialog() {
+  document.getElementById('confirmDialog').classList.remove('open');
+  pendingOrderId = null;
+}
+
+async function confirmTake() {
+  if (!pendingOrderId) return;
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  try {
+    const orderRef = db.ref('orders/' + pendingOrderId);
+    const snap = await orderRef.once('value');
+    const order = snap.val();
+
+    if (!order || order.status !== 'new') {
+      closeDialog();
+      showToast('Замовлення вже взяли 😅');
+      btn.disabled = false;
+      btn.textContent = 'Підтвердити ✓';
+      return;
+    }
+
+    await orderRef.update({
+      status: 'taken',
+      takenBy: currentDriver.id,
+      takenByName: currentDriver.name,
+      takenAt: Date.now()
+    });
+
+    closeDialog();
+    showToast('Замовлення твоє! 🎉');
+    switchTab('my');
+
+    // notify admin via Telegram
+    notifyAdmin(order, currentDriver.name);
+
+  } catch (e) {
+    showToast('Помилка. Спробуй ще раз.');
+  }
+  btn.disabled = false;
+  btn.textContent = 'Підтвердити ✓';
+}
+
+async function notifyAdmin(order, driverName) {
+  const text = `✅ *Замовлення взято!*\n*${order.orderNum}*\n\n🚗 Водій: ${driverName}\n📦 ${order.services}\n🛣️ ${order.from} → ${order.to}\n💰 ${order.driverPay} ₴`;
+  try {
+    await fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text, parse_mode: 'Markdown' })
+    });
+  } catch (e) {}
+}
+
+// ── SOUND ALERT ──
+function playAlert() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.15, 0.3].forEach(delay => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+      gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + delay + 0.05);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + delay + 0.2);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.3);
+    });
+  } catch (e) {}
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── AUTO LOGIN (session) ──
+const saved = sessionStorage.getItem('bussy_driver');
+if (saved) {
+  try {
+    currentDriver = JSON.parse(saved);
+    showMain();
+  } catch (e) {}
+}
+
+// Check notification on page focus
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && currentDriver) checkNotifPermission();
+});
+</script>
+</body>
+</html>
