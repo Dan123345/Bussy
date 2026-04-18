@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bussy — Замовлення</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ffc900'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='18' fill='%230f0f0f'%3EB%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--y:#ffc900;--yl:#fffaeb;--yd:#e6b400;--blk:#0f0f0f;--bg:#f7f7f7;--card:#fff;--line:#ebebeb;--t2:#888;--t3:#bbb;--r:20px;--rs:13px}
+body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--blk);max-width:480px;margin:0 auto;min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:32px}
+
+nav{background:var(--card);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:200}
+.logo-name{font-family:'Unbounded',sans-serif;font-weight:900;font-size:19px;letter-spacing:-.5px}
+.logo-name em{color:var(--y);font-style:normal}
+.logo-sub{font-size:10px;color:var(--t2);margin-top:1px;font-weight:500}
+.status-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px}
+.s-wait{color:#64748b;background:#f1f5f9}
+.s-loading{color:#854d0e;background:#fef9c3}
+.s-driving{color:#166534;background:#dcfce7}
+.s-unloading{color:#854d0e;background:#fef9c3}
+.s-done{color:#166534;background:#dcfce7}
+
+.card{background:var(--card);border-radius:var(--r);margin:12px 12px 0;overflow:hidden}
+
+/* ORDER HEADER */
+.order-header{background:var(--blk);padding:16px 18px;display:flex;align-items:center;justify-content:space-between}
+.order-num{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;color:var(--y)}
+.order-date-lbl{font-size:11px;color:rgba(255,255,255,.4)}
+
+/* DETAILS */
+.section-head{padding:14px 18px 0;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-head-icon{font-size:15px}
+.section-head-title{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700}
+.detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 18px;border-bottom:1px solid var(--line);gap:12px}
+.detail-row:last-child{border:none;padding-bottom:14px}
+.detail-label{font-size:12px;color:var(--t2);font-weight:500;flex-shrink:0}
+.detail-val{font-size:13px;font-weight:600;color:var(--blk);text-align:right;line-height:1.4}
+
+/* ACCORDION */
+.accordion{margin:12px 12px 0;display:flex;flex-direction:column;gap:8px}
+.acc-item{background:var(--card);border-radius:var(--rs);overflow:hidden}
+.acc-trigger{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;gap:12px}
+.acc-trigger-left{display:flex;align-items:center;gap:10px}
+.acc-icon{font-size:16px;flex-shrink:0}
+.acc-label{font-size:13px;font-weight:700;color:var(--blk)}
+.acc-arrow{font-size:12px;color:var(--t2);transition:transform .2s;flex-shrink:0}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.acc-item.open .acc-body{max-height:800px}
+.acc-inner{padding:0 16px 14px}
+.acc-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.acc-row:last-child{border:none}
+.acc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.acc-dot.y{background:var(--y)}
+.acc-dot.r{background:#e74c3c}
+.acc-dot.g{background:#27ae60}
+.acc-dot.gr{background:var(--t3)}
+.acc-text{font-size:12px;color:var(--blk);line-height:1.55}
+.acc-text strong{font-weight:700}
+.acc-note{font-size:11px;color:var(--t2);background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5}
+.acc-warn{font-size:11px;font-weight:700;color:#856404;background:#fff3cd;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5}
+
+/* PAY */
+.pay-section{background:var(--card);border-radius:var(--r);margin:12px 12px 0;padding:18px}
+.total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.total-label{font-size:13px;color:var(--t2);font-weight:500}
+.total-val{font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;color:var(--blk)}
+.btn-pay{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--y);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;padding:16px;border-radius:100px;border:none;cursor:pointer;transition:transform .15s,background .15s}
+.btn-pay:active{transform:scale(.97);background:var(--yd)}
+.card-hint{font-size:11px;color:var(--t3);text-align:center;margin-top:10px;line-height:1.6}
+.card-num{font-weight:700;color:var(--t2);letter-spacing:.5px}
+
+/* TRACKING */
+.tl{display:flex;flex-direction:column}
+.tl-item{display:flex;gap:14px}
+.tl-left{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0}
+.tl-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);background:#fff;flex-shrink:0;transition:all .3s}
+.tl-dot.active{background:var(--y);border-color:var(--y);box-shadow:0 0 0 4px rgba(255,201,0,.2)}
+.tl-dot.done{background:#22c55e;border-color:#22c55e}
+.tl-line{width:2px;flex:1;background:var(--line);min-height:24px}
+.tl-content{padding-bottom:18px}
+.tl-label{font-size:14px;font-weight:600}
+.tl-time{font-size:13px;color:var(--t2);margin-top:2px;font-variant-numeric:tabular-nums}
+
+/* MAP */
+.map-wrap{margin:12px 12px 0;display:none} #map,#driverMap{min-height:240px;}
+.map-lbl{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;padding:0 2px}
+#map{height:240px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line)} #map>div{border-radius:var(--r)!important}
+
+/* SUMMARY */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sum-item{background:var(--bg);border-radius:12px;padding:12px}
+.sum-lbl{font-size:11px;color:var(--t2);margin-bottom:4px}
+.sum-val{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.sum-total{background:var(--y);grid-column:1/-1}
+
+/* THANKS */
+.thanks-hero{background:var(--blk);border-radius:var(--r);margin:12px 12px 0;padding:28px 20px;text-align:center}
+.thanks-ico{font-size:44px;margin-bottom:10px}
+.thanks-ttl{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:900;color:#fff;line-height:1.25;margin-bottom:6px}
+.thanks-sub{font-size:12px;color:rgba(255,255,255,.45);line-height:1.5}
+
+/* REVIEW */
+.stars-row{display:flex;align-items:center;gap:4px;margin:10px 0}
+.star{font-size:36px;cursor:pointer;transition:transform .1s;filter:grayscale(1);opacity:.25;line-height:1;user-select:none;-webkit-tap-highlight-color:transparent}
+.star.on{filter:none;opacity:1}
+.star.pop{transform:scale(1.3)}
+.star-lbl{font-size:12px;color:var(--t2);margin-left:4px;min-width:60px}
+.sent-badge{display:none;align-items:center;gap:6px;background:#e8f5ed;border-radius:100px;padding:4px 12px;font-size:11px;font-weight:700;color:#2d7d46;margin-top:8px}
+.sent-badge.vis{display:inline-flex}
+
+/* PROMO/SHARE BTNS */
+.action-btns{margin:0 12px}
+.btn-promo{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--y);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:900;padding:18px 20px;border-radius:100px;border:none;cursor:pointer;transition:transform .15s,background .15s;margin-top:10px}
+.btn-promo:active{transform:scale(.97);background:var(--yd)}
+.btn-share{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--card);color:var(--blk);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:900;padding:18px 20px;border-radius:100px;border:1.5px solid var(--line);cursor:pointer;transition:transform .15s;margin-top:10px}
+.btn-share:active{transform:scale(.97)}
+
+/* DRIVER CONTROLS */
+.timer-box{background:var(--blk);border-radius:var(--r);padding:20px;text-align:center;margin:12px 12px 0;display:none}
+.timer-lbl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.timer-val{font-family:'Unbounded',sans-serif;font-size:44px;font-weight:900;color:var(--y);font-variant-numeric:tabular-nums;letter-spacing:2px}
+.drv-btn{display:none;width:calc(100% - 24px);margin:12px 12px 0;padding:18px;border:none;border-radius:100px;font-size:16px;font-weight:900;font-family:'Unbounded',sans-serif;cursor:pointer;transition:transform .1s}
+.drv-btn:active{transform:scale(.97)}
+.btn-y{background:var(--y);color:var(--blk)}
+.btn-dk{background:var(--blk);color:#fff}
+.btn-rd{background:#ef4444;color:#fff}
+
+/* PHOTO */
+.photo-drop{border:2px dashed var(--line);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s}
+.photo-drop:hover{border-color:var(--y)}
+.photo-count{font-size:12px;color:var(--t2);margin-top:6px;display:none}
+.photo-submit{width:100%;margin-top:12px;padding:14px;background:var(--blk);color:#fff;border:none;border-radius:100px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif}
+.success-msg{background:#e8f5ed;color:#2d7d46;padding:14px;border-radius:12px;font-size:14px;font-weight:700;text-align:center}
+
+/* ADMIN */
+.al-item{background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--line);cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.al-item:last-child{margin-bottom:0}
+.al-role{font-size:12px;font-weight:700;color:var(--blk)}
+.al-url{font-size:11px;color:var(--t2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:270px}
+
+/* POPUP */
+.overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.open{opacity:1;pointer-events:all}
+.popup{background:var(--card);border-radius:24px 24px 0 0;padding:28px 22px 36px;width:100%;max-width:480px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)}
+.overlay.open .popup{transform:translateY(0)}
+.popup-drag{width:40px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 20px}
+.popup-ico{font-size:40px;text-align:center;margin-bottom:12px}
+.popup-ttl{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:900;text-align:center;margin-bottom:6px}
+.popup-sub{font-size:12px;color:var(--t2);text-align:center;line-height:1.6;margin-bottom:20px}
+.promo-box{background:var(--y);border-radius:var(--rs);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.promo-code{font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:var(--blk);letter-spacing:1px}
+.promo-btn{background:var(--blk);color:#fff;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;padding:9px 18px;border-radius:100px;border:none;cursor:pointer}
+.promo-note{font-size:11px;color:var(--t2);text-align:center;line-height:1.5}
+.popup-close{display:block;width:100%;background:var(--bg);color:var(--blk);font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;padding:13px;border-radius:100px;border:none;cursor:pointer;margin-top:14px}
+.share-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.share-opt{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--bg);border-radius:var(--rs);cursor:pointer;border:none;width:100%;text-align:left;transition:background .15s}
+.share-opt:active{background:var(--yl)}
+.share-opt-ico{font-size:24px;width:32px;text-align:center;flex-shrink:0}
+.share-opt-text{font-size:14px;font-weight:600;color:var(--blk)}
+.share-opt-sub{font-size:11px;color:var(--t2);margin-top:1px}
+
+footer{background:var(--blk);color:#fff;margin:12px 12px 0;border-radius:var(--r);padding:16px 18px;display:flex;align-items:center;justify-content:space-between}
+.ft-logo{font-family:'Unbounded',sans-serif;font-weight:900;font-size:14px}
+.ft-logo em{color:var(--y);font-style:normal}
+.ft-phone{font-size:12px;font-weight:600;color:#fff;text-decoration:none}
+.ft-hint{font-size:10px;color:rgba(255,255,255,.35);margin-bottom:2px}
+
+.copied-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--blk);color:#fff;font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;padding:12px 24px;border-radius:100px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999;white-space:nowrap}
+.copied-toast.show{opacity:1}
+</style>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,update,onValue}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB={apiKey:"AIzaSyDRbyjk3nnbWXgZCcW7PAq_BQcqerY7paE",authDomain:"bussy-ee650.firebaseapp.com",databaseURL:"https://bussy-ee650-default-rtdb.europe-west1.firebasedatabase.app",projectId:"bussy-ee650",storageBucket:"bussy-ee650.firebasestorage.app",messagingSenderId:"841941953587",appId:"1:841941953787:web:c99c94dc971f604960c746"};
+const AS='https://script.google.com/macros/s/AKfycbzAIKfIxUuuhlawwQGQoF3LZ__51743PD5uIckh8Pa0LvJCM_z7U8hFg8ZOuHUjS9M/exec';
+const SHARE_URL='https://bussy.mobi/?utm_source=referral&utm_medium=client&utm_campaign=review';
+const CARD='5168745132894343';
+const CARD_DISP='5168 7451 3289 4343';
+const TRIP_BASE=window.location.origin+window.location.pathname;
+const REVIEW_SH='https://script.google.com/macros/s/AKfycbz26c76eIOMhGBwKQ3fvpkwnjxN0pGIik6Iw8n84E-qBgqhMg_EdLH_Vg1fOAkeRFnm/exec';
+
+const fbapp=initializeApp(FB);
+const db=getDatabase(fbapp);
+const params=new URLSearchParams(window.location.search);
+const order=params.get('order')||'unknown';
+const view=params.get('view')||'client';
+const tripRef=ref(db,`trips/${order}`);
+
+let map=null,marker=null,geoId=null;
+let gmapsReady=false;
+let pendingMapInit=null;
+window.onGMapsReady=function(){
+  gmapsReady=true;
+  if(pendingMapInit){initMap(...pendingMapInit);pendingMapInit=null;}
+  // If map-wrap is visible, trigger resize
+  setTimeout(()=>{if(map)google.maps.event.trigger(map,'resize');},100);
+};
+let drvInt=null,dispInt=null;
+
+function pad(n){return String(n).padStart(2,'0');}
+function fmt(s){if(s===undefined||s===null)return'—';s=Math.round(Math.max(0,s));const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return h>0?`${pad(h)}:${pad(m)}:${pad(sc)}`:`${pad(m)}:${pad(sc)}`;}
+function el(id){return document.getElementById(id);}
+function setT(id,v){const e=el(id);if(e)e.textContent=v||'—';}
+function show(id,v){const e=el(id);if(e)e.style.display=v?'block':'none';}
+window.toast=function(msg){const t=el('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);};
+
+// MAP
+function initMap(lat,lng){
+  if(!gmapsReady){
+    const t=setInterval(()=>{ if(gmapsReady){ clearInterval(t); initMap(lat,lng); }},200);
+    return;
+  }
+  const mapEl=el('map');if(!mapEl)return;
+  mapEl.style.cssText='height:240px!important;width:100%!important;min-height:240px;display:block;';
+  if(map){
+    google.maps.event.trigger(map,'resize');
+    map.setCenter({lat,lng});
+    if(marker)marker.setPosition({lat,lng});
+    return;
+  }
+  map=new google.maps.Map(mapEl,{
+    center:{lat,lng},zoom:16,
+    mapTypeControl:false,
+    streetViewControl:false,
+    fullscreenControl:false,
+    gestureHandling:'greedy'
+  });
+  marker=new google.maps.Marker({
+    position:{lat,lng},map,
+    icon:{
+      url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" fill="#ffc900" stroke="white" stroke-width="3"/><text x="22" y="29" text-anchor="middle" font-size="20">🚛</text></svg>'),
+      scaledSize:new google.maps.Size(44,44),
+      anchor:new google.maps.Point(22,22)
+    }
+  });
+  [200,500,1000,2000].forEach(t=>setTimeout(()=>{ google.maps.event.trigger(map,'resize'); map.setCenter({lat,lng}); },t));
+}
+function moveMap(lat,lng){
+  if(!gmapsReady){ pendingMapInit=[lat,lng]; return; }
+  if(!map){ initMap(lat,lng); return; }
+  const pos={lat,lng};
+  marker.setPosition(pos);
+  map.panTo(pos);
+  // Resize in case element was hidden
+  google.maps.event.trigger(map,'resize');
+}
+
+// WAKE LOCK - keep screen awake for geo tracking
+let wakeLock=null;
+async function requestWakeLock(){
+  try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen');}}
+  catch(e){console.warn('wakeLock',e);}
+}
+function releaseWakeLock(){if(wakeLock){wakeLock.release();wakeLock=null;}}
+document.addEventListener('visibilitychange',async()=>{if(wakeLock!==null&&document.visibilityState==='visible')await requestWakeLock();});
+
+// GEO
+function startGeo(){
+  if(!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const{latitude:lat,longitude:lng,accuracy:acc}=pos.coords;
+    update(tripRef,{lat,lng,acc:Math.round(acc),lastGeo:Date.now()});
+    if(view==='driver')moveMap(lat,lng);
+  },null,{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+  requestWakeLock();
+  geoId=navigator.geolocation.watchPosition(pos=>{
+    const{latitude:lat,longitude:lng,accuracy:acc}=pos.coords;
+    update(tripRef,{lat,lng,acc:Math.round(acc),lastGeo:Date.now()});
+    if(view==='driver')moveMap(lat,lng);
+  },e=>console.warn('geo',e),{enableHighAccuracy:true,maximumAge:0,timeout:15000});
+}
+function stopGeo(){if(geoId!==null){navigator.geolocation.clearWatch(geoId);geoId=null;}releaseWakeLock();}
+
+// TIMERS
+function startDisp(startMs,elId){
+  if(dispInt)clearInterval(dispInt);
+  const tick=()=>{const e=el(elId);if(e)e.textContent=fmt(Math.floor((Date.now()-startMs)/1000));};
+  tick();dispInt=setInterval(tick,1000);
+}
+function stopDisp(){if(dispInt){clearInterval(dispInt);dispInt=null;}}
+function startDrv(startMs){
+  if(drvInt)clearInterval(drvInt);
+  const tick=()=>{const e=el('timer-val');if(e)e.textContent=fmt(Math.floor((Date.now()-startMs)/1000));};
+  tick();drvInt=setInterval(tick,1000);
+}
+function stopDrv(){if(drvInt){clearInterval(drvInt);drvInt=null;}}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  setT('order-num',order);
+  el('order-date-lbl').textContent='Дата формування: '+new Date().toLocaleDateString('uk-UA',{day:'numeric',month:'long',year:'numeric'});
+
+  if(view==='driver'){
+    show('nav-status',false);
+    show('driver-section',true);
+    show('tracking-section',true);
+    show('map-wrap',true);
+    if(gmapsReady)initMap(49.2328,28.4682);else pendingMapInit=[49.2328,28.4682];
+    // driver: hide client+phone rows, hide amount row
+    ['row-client','row-phone','row-amount','row-driver-lbl'].forEach(id=>show(id,false));
+  }
+  if(view==='client'){
+    show('payment-section',true);
+    // client: hide amount in details (shown in pay section), hide driver initially
+    show('row-amount',false);
+    // client sees all fields except amount
+  }
+  if(view==='admin'){
+    show('admin-section',true);
+    show('tracking-section',true);
+    show('map-wrap',true);
+    if(gmapsReady)initMap(49.2328,28.4682);else pendingMapInit=[49.2328,28.4682];
+    el('url-client').textContent=`${TRIP_BASE}?order=${order}&view=client`;
+    el('url-driver').textContent=`${TRIP_BASE}?order=${order}&view=driver`;
+  }
+
+  onValue(tripRef,snap=>{
+    const data=snap.val()||{};
+    renderDetails(data.orderData||{});
+    renderPhase(data);
+  });
+
+  setupCopyCard();
+  setupPhotoInput();
+  setupReview();
+});
+
+function renderDetails(od){
+  // Fields for all views
+  setT('d-service',od.service);
+  setT('d-from',od.from);
+  setT('d-to',od.to);
+  setT('d-distance',od.distance);
+  setT('d-notes',od.notes);
+  setT('d-datetime',od.datetime);
+
+  // Client + Admin: show client name, phone, driver
+  if(view==='client'){
+    setT('d-total',od.amount?Number(od.amount).toLocaleString('uk-UA')+' ₴':'—');
+    // show client name and phone
+    if(od.clientName){setT('d-client',od.clientName);show('row-client',true);}
+    if(od.clientPhone){setT('d-phone',od.clientPhone);show('row-phone',true);}
+    // show driver name if set
+    if(od.driverName){
+      setT('d-driver',od.driverName);
+      show('row-driver-lbl',true);
+    }
+  }
+  if(view==='admin'){
+    setT('d-client',od.clientName);
+    setT('d-phone',od.clientPhone);
+    if(od.driverName){setT('d-driver',od.driverName);show('row-driver-lbl',true);}
+    setT('d-amount-val',od.amount?od.amount+' ₴':'—');
+    show('row-amount',true);
+  }
+  if(view==='driver'){
+    // driver sees: service, from, to, distance, datetime, notes, client name+phone (NOT amount, NOT driver row)
+    setT('d-client',od.clientName);
+    setT('d-phone',od.clientPhone);
+    show('row-client',true);
+    show('row-phone',true);
+  }
+}
+
+function renderPhase(data){
+  const phase=data.phase||'idle';
+  updateStatus(phase);
+
+  if(view==='client'){
+    if(phase==='idle'){
+      show('payment-section',true);
+      show('tracking-section',false);
+    } else if(phase==='done'){
+      show('payment-section',false);
+      show('tracking-section',false);
+      show('done-section',true);
+      // hide order details card when done
+      const detCard=document.querySelector('.card');
+      if(detCard)detCard.style.display='none';
+      // fill summary in done section
+      el('sum-loading').textContent=fmt(data.loadingTime);
+      el('sum-trip').textContent=fmt(data.tripTime);
+      el('sum-unload').textContent=fmt(data.unloadingTime);
+      el('sum-total').textContent=fmt(data.totalTime);
+    } else {
+      show('payment-section',false);
+      show('tracking-section',true);
+    }
+  }
+
+  // Show map for all active trip phases
+  if(view!=='driver'){
+    const activePhase = phase==='loading'||phase==='driving'||phase==='unloading';
+    const mw=el('map-wrap');
+    if(mw) mw.style.display=activePhase?'block':'none';
+    if(activePhase){
+      const mapEl=el('map');
+      if(mapEl){ mapEl.style.height='240px'; mapEl.style.minHeight='240px'; mapEl.style.width='100%'; }
+      const lat=data.lat||49.2328, lng=data.lng||28.4682;
+      if(!map){
+        if(gmapsReady){ initMap(lat,lng); }
+        else { pendingMapInit=[lat,lng]; }
+      }
+      // Trigger resize many times - map might be initializing
+      [100,300,600,1000,2000].forEach(t=>{
+        setTimeout(()=>{
+          if(map){
+            google.maps.event.trigger(map,'resize');
+            if(data.lat&&data.lng) map.setCenter({lat:data.lat,lng:data.lng});
+          }
+        },t);
+      });
+      if(data.lat&&data.lng) moveMap(data.lat,data.lng);
+      // Force map to render after becoming visible
+      requestAnimationFrame(()=>{
+        if(map){google.maps.event.trigger(map,'resize');if(data.lat)map.setCenter({lat:data.lat,lng:data.lng});}
+      });
+    }
+  } else {
+    if(data.lat&&data.lng) moveMap(data.lat,data.lng);
+    if(map) [100,500].forEach(t=>setTimeout(()=>google.maps.event.trigger(map,'resize'),t));
+  }
+
+  updateTimeline(phase,data);
+  if(view==='driver')updateDriverUI(phase,data);
+
+  if(phase==='done'&&view==='driver'){
+    show('driver-sum-card',true);
+    el('ds-loading').textContent=fmt(data.loadingTime);
+    el('ds-trip').textContent=fmt(data.tripTime);
+    el('ds-unload').textContent=fmt(data.unloadingTime);
+    el('ds-total').textContent=fmt(data.totalTime);
+  }
+  if(phase==='done'&&view==='admin'){
+    show('summary-card-admin',true);
+    setT('sa-loading',fmt(data.loadingTime));setT('sa-trip',fmt(data.tripTime));
+    setT('sa-unload',fmt(data.unloadingTime));setT('sa-total',fmt(data.totalTime));
+  }
+  if(phase==='done'&&view==='driver'&&!data.photoUploaded){
+    show('photo-card',true);
+  }
+}
+
+function updateStatus(phase){
+  const labels={idle:'Очікує оплати',loading:'Завантаження',driving:'В дорозі',unloading:'Розвантаження',done:'Завершено'};
+  const cls={idle:'s-wait',loading:'s-loading',driving:'s-driving',unloading:'s-unloading',done:'s-done'};
+  const e=el('nav-status');
+  if(e){e.textContent=labels[phase]||phase;e.className='status-badge '+(cls[phase]||'s-wait');}
+}
+
+function updateTimeline(phase,data){
+  if(phase==='done'){stopDisp();return;}
+  const steps=[
+    {id:'tl-loading',phase:'loading',doneKey:'loadingTime',startKey:'loadingStartTs',timeId:'tt-loading'},
+    {id:'tl-driving',phase:'driving',doneKey:'tripTime',startKey:'drivingStartTs',timeId:'tt-driving'},
+    {id:'tl-unloading',phase:'unloading',doneKey:'unloadingTime',startKey:'unloadingStartTs',timeId:'tt-unloading'},
+  ];
+  const ord=['idle','loading','driving','unloading','done'];
+  const pi=ord.indexOf(phase);
+  steps.forEach(s=>{
+    const e=el(s.id);if(!e)return;
+    const dot=e.querySelector('.tl-dot');
+    const te=el(s.timeId);
+    const si=ord.indexOf(s.phase);
+    if(si<pi){dot.className='tl-dot done';if(te&&data[s.doneKey]!==undefined)te.textContent=fmt(data[s.doneKey]);}
+    else if(s.phase===phase){
+      dot.className='tl-dot active';
+      if(te&&view!=='driver'&&data[s.startKey])startDisp(data[s.startKey],s.timeId);
+    } else {dot.className='tl-dot';if(te)te.textContent='';}
+  });
+}
+
+function updateDriverUI(phase,data){
+  ['btn-loading','btn-driving','btn-unloading','btn-done'].forEach(id=>show(id,false));
+  show('btn-loading',phase==='idle');
+  show('btn-driving',phase==='loading');
+  show('btn-unloading',phase==='driving');
+  show('btn-done',phase==='unloading');
+  const box=el('timer-box');
+  if(phase==='loading'&&data.loadingStartTs){box.style.display='block';el('timer-lbl').textContent='Час завантаження';startDrv(data.loadingStartTs);}
+  else if(phase==='driving'&&data.drivingStartTs){box.style.display='block';el('timer-lbl').textContent='Час в дорозі';startDrv(data.drivingStartTs);}
+  else if(phase==='unloading'&&data.unloadingStartTs){box.style.display='block';el('timer-lbl').textContent='Час розвантаження';startDrv(data.unloadingStartTs);}
+  else{box.style.display='none';stopDrv();}
+}
+
+window.driverAction=async function(action){
+  const now=Date.now();
+  const snap=await new Promise(r=>onValue(tripRef,r,{onlyOnce:true}));
+  const data=snap.val()||{};
+  if(action==='loading'){await update(tripRef,{phase:'loading',loadingStartTs:now});startGeo();}
+  else if(action==='driving'){const lt=Math.floor((now-(data.loadingStartTs||now))/1000);await update(tripRef,{phase:'driving',loadingTime:lt,drivingStartTs:now});}
+  else if(action==='unloading'){const tt=Math.floor((now-(data.drivingStartTs||now))/1000);await update(tripRef,{phase:'unloading',tripTime:tt,unloadingStartTs:now});stopGeo();}
+  else if(action==='done'){
+    const ut=Math.floor((now-(data.unloadingStartTs||now))/1000);
+    const total=(data.loadingTime||0)+(data.tripTime||0)+ut;
+    await update(tripRef,{phase:'done',unloadingTime:ut,totalTime:total,doneAt:now});
+    stopGeo();
+  }
+};
+
+// PHOTO — multiple files
+function setupPhotoInput(){
+  const inp=el('photo-input');
+  if(!inp)return;
+  inp.addEventListener('change',()=>{
+    const cnt=el('photo-count');
+    if(cnt){cnt.style.display=inp.files.length>0?'block':'none';cnt.textContent=`Обрано фото: ${inp.files.length}`;}
+  });
+}
+
+window.handlePhoto=async function(){
+  const inp=el('photo-input');
+  if(!inp||!inp.files.length){toast('Виберіть фото');return;}
+  const btn=el('photo-submit');btn.textContent='Завантаження...';btn.disabled=true;
+  try{
+    const snap=await new Promise(r=>onValue(tripRef,r,{onlyOnce:true}));
+    const data=snap.val()||{};const od=data.orderData||{};
+    const urls=[];
+    for(const file of inp.files){
+      const reader=new FileReader();
+      const url=await new Promise((res,rej)=>{
+        reader.onload=async e=>{
+          try{
+            const r=await fetch(AS,{method:'POST',body:JSON.stringify({action:'uploadPhoto',fileData:e.target.result,mimeType:file.type,fileName:`bussy_${order}_${Date.now()}.jpg`})});
+            const j=await r.json();res(j.fileUrl||'');
+          }catch(err){rej(err);}
+        };
+        reader.readAsDataURL(file);
+      });
+      urls.push(url);
+    }
+    await fetch(AS,{method:'POST',body:JSON.stringify({action:'saveTrip',orderNumber:order,clientName:od.clientName,clientPhone:od.clientPhone,driverName:od.driverName,service:od.service,from:od.from,to:od.to,distance:od.distance,datetime:od.datetime,amount:od.amount,notes:od.notes,loadingTime:data.loadingTime||0,tripTime:data.tripTime||0,unloadingTime:data.unloadingTime||0,totalTime:data.totalTime||0,photoUrl:urls.join(', ')})});
+    await update(tripRef,{photoUploaded:true,photoUrl:urls.join(', ')});
+    el('photo-card').innerHTML='<div style="margin:12px 12px 0"><div class="success-msg">✓ Фото завантажено і дані збережено</div></div>';
+  }catch(e){btn.textContent='Спробувати ще раз';btn.disabled=false;alert('Помилка: '+e.message);}
+};
+
+// COPY CARD
+function setupCopyCard(){
+  const btn=el('copy-card-btn');
+  if(!btn)return;
+  btn.addEventListener('click',()=>{
+    navigator.clipboard.writeText(CARD).then(()=>{
+      btn.textContent='✓ Скопійовано!';
+      setTimeout(()=>{btn.innerHTML='💳 Скопіювати номер картки';},2000);
+    }).catch(()=>{
+      const ta=document.createElement('textarea');ta.value=CARD;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+      btn.textContent='✓ Скопійовано!';setTimeout(()=>{btn.innerHTML='💳 Скопіювати номер картки';},2000);
+    });
+  });
+}
+
+
+
+// REVIEW
+const starLabels=['','😞 Погано','😐 Так собі','🙂 Нормально','😊 Добре','🤩 Відмінно'];
+let ratings={r1:0,r2:0};let saveTimer=null;let saved=false;
+function setupReview(){}
+window.setStar=function(q,val){
+  ratings['r'+q]=val;
+  const stars=el('stars'+q)?.children;
+  if(!stars)return;
+  for(let i=0;i<5;i++)stars[i].classList.toggle('on',i<val);
+  stars[val-1].classList.add('pop');setTimeout(()=>stars[val-1].classList.remove('pop'),200);
+  const lb=el('sl'+q);if(lb)lb.textContent=starLabels[val];
+  saved=false;clearTimeout(saveTimer);saveTimer=setTimeout(saveReview,1000);
+};
+async function saveReview(){
+  if(!ratings.r1&&!ratings.r2)return;
+  if(saved)return;saved=true;
+  try{
+    const p=new URLSearchParams({action:'review',orderNum:order,r1:ratings.r1||'',r2:ratings.r2||'',date:new Date().toLocaleString('uk-UA')});
+    await fetch(REVIEW_SH+'?'+p.toString(),{mode:'no-cors'});
+  }catch(e){}
+  if(ratings.r1){const b=el('sb1');if(b)b.classList.add('vis');}
+  if(ratings.r2){const b=el('sb2');if(b)b.classList.add('vis');}
+}
+window.openPromo=()=>el('promoOverlay').classList.add('open');
+window.openShare=()=>el('shareOverlay').classList.add('open');
+window.closeOverlay=id=>el(id).classList.remove('open');
+window.copyPromo=()=>navigator.clipboard.writeText('BUSSY8').then(()=>toast('✓ Код BUSSY8 скопійовано!'));
+window.shareTo=function(t){
+  const ST='Вантажні перевезення Bussy — подача авто від 500 грн, ціна за 3 кліки → '+SHARE_URL;
+  if(t==='telegram')window.open('https://t.me/share/url?url='+encodeURIComponent(SHARE_URL)+'&text='+encodeURIComponent('Вантажні перевезення Bussy — подача авто від 500 грн, ціна за 3 кліки'));
+  else if(t==='viber')window.open('viber://forward?text='+encodeURIComponent(ST));
+  else navigator.clipboard.writeText(SHARE_URL).then(()=>toast('✓ Посилання скопійовано!'));
+  closeOverlay('shareOverlay');
+};
+window.copyAdminLink=function(role){
+  const url=el('url-'+role)?.textContent;
+  if(url)navigator.clipboard.writeText(url).then(()=>toast('Скопійовано!'));
+};
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCJIykKHjRfUBW1hBnlHJQ5GRolqC7Qrz0&callback=onGMapsReady" async defer></script>
+</head>
+<body>
+
+<nav>
+  <div>
+    <div class="logo-name">Bu<em>ss</em>y</div>
+    <div class="logo-sub">вантажні перевезення у Вінниці</div>
+  </div>
+  <div class="status-badge s-wait" id="nav-status">Очікує оплати</div>
+</nav>
+
+<!-- ORDER CARD (деталі) -->
+<div class="card">
+  <div class="order-header">
+    <div class="order-num" id="order-num">—</div>
+    <div class="order-date-lbl" id="order-date-lbl"></div>
+  </div>
+  <div class="section-head"><span class="section-head-icon">📦</span><div class="section-head-title">Деталі замовлення</div></div>
+
+  <!-- Порядок: Послуга, Звідки, Куди, Відстань, Дата і час, Додатково, Клієнт, Телефон, Водій, Сума (тільки адмін) -->
+  <div class="detail-row">
+    <div class="detail-label">Послуга</div>
+    <div class="detail-val" id="d-service">—</div>
+  </div>
+  <div class="detail-row">
+    <div class="detail-label">Звідки</div>
+    <div class="detail-val" id="d-from">—</div>
+  </div>
+  <div class="detail-row">
+    <div class="detail-label">Куди</div>
+    <div class="detail-val" id="d-to">—</div>
+  </div>
+  <div class="detail-row">
+    <div class="detail-label">Відстань (км)</div>
+    <div class="detail-val" id="d-distance">—</div>
+  </div>
+  <div class="detail-row">
+    <div class="detail-label">Дата і час</div>
+    <div class="detail-val" id="d-datetime">—</div>
+  </div>
+  <div class="detail-row">
+    <div class="detail-label">Додатково</div>
+    <div class="detail-val" id="d-notes">—</div>
+  </div>
+  <div class="detail-row" id="row-client" style="display:none">
+    <div class="detail-label">Клієнт</div>
+    <div class="detail-val" id="d-client">—</div>
+  </div>
+  <div class="detail-row" id="row-phone" style="display:none">
+    <div class="detail-label">Телефон</div>
+    <div class="detail-val" id="d-phone">—</div>
+  </div>
+  <div class="detail-row" id="row-driver-lbl" style="display:none">
+    <div class="detail-label">Водій</div>
+    <div class="detail-val" id="d-driver">—</div>
+  </div>
+  <div class="detail-row" id="row-amount" style="display:none">
+    <div class="detail-label">Сума</div>
+    <div class="detail-val" id="d-amount-val">—</div>
+  </div>
+</div>
+
+<!-- PAYMENT SECTION (client only) -->
+<div id="payment-section" style="display:none">
+  <div class="accordion">
+    <div class="acc-item open">
+      <div class="acc-trigger" onclick="this.closest('.acc-item').classList.toggle('open')">
+        <div class="acc-trigger-left"><span class="acc-icon">✅</span><div class="acc-label">Що відбудеться після оплати</div></div>
+        <span class="acc-arrow">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        <div class="acc-row"><div class="acc-dot y"></div><div class="acc-text"><strong>Крок 1.</strong> Надішліть скрін підтвердження оплати логісту — <a href="tel:+380665179774" style="color:var(--blk);font-weight:600">+38 (066) 517-97-74</a></div></div>
+        <div class="acc-row"><div class="acc-dot y"></div><div class="acc-text"><strong>Крок 2.</strong> Логіст підтвердить замовлення і повідомить ім'я водія та орієнтовний час прибуття</div></div>
+        <div class="acc-row"><div class="acc-dot y"></div><div class="acc-text"><strong>Крок 3.</strong> Водій приїде у вказаний час. Будьте на місці і готові до завантаження</div></div>
+        <div class="acc-note">💡 Якщо є зміни в замовленні — телефонуйте одразу, не чекайте дня виконання</div>
+      </div></div>
+    </div>
+    <div class="acc-item">
+      <div class="acc-trigger" onclick="this.closest('.acc-item').classList.toggle('open')">
+        <div class="acc-trigger-left"><span class="acc-icon">↩️</span><div class="acc-label">Повернення коштів при скасуванні</div></div>
+        <span class="acc-arrow">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        <div class="acc-row"><div class="acc-dot g"></div><div class="acc-text"><strong>Більше ніж за 4 години</strong> — повне повернення коштів</div></div>
+        <div class="acc-row"><div class="acc-dot y"></div><div class="acc-text"><strong>Від 2 до 4 годин</strong> — повертаємо 50% від суми</div></div>
+        <div class="acc-row"><div class="acc-dot r"></div><div class="acc-text"><strong>Менше ніж за 2 години</strong> — без повернення</div></div>
+        <div class="acc-row"><div class="acc-dot r"></div><div class="acc-text"><strong>Водій вже виїхав</strong> — без повернення</div></div>
+        <div class="acc-row"><div class="acc-dot r"></div><div class="acc-text"><strong>Після початку завантаження</strong> — без повернення</div></div>
+        <div class="acc-note">Для скасування телефонуйте логісту: <a href="tel:+380665179774" style="color:var(--blk);font-weight:700">+38 (066) 517-97-74</a></div>
+      </div></div>
+    </div>
+    <div class="acc-item">
+      <div class="acc-trigger" onclick="this.closest('.acc-item').classList.toggle('open')">
+        <div class="acc-trigger-left"><span class="acc-icon">⏱</span><div class="acc-label">Якщо водій запізнюється</div></div>
+        <span class="acc-arrow">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        <div class="acc-row"><div class="acc-dot g"></div><div class="acc-text"><strong>До 10 хвилин</strong> — небажана ситуація, логіст вас попередить</div></div>
+        <div class="acc-row"><div class="acc-dot y"></div><div class="acc-text"><strong>15–30 хвилин</strong> — ви отримаєте знижку 10% від суми замовлення</div></div>
+        <div class="acc-row"><div class="acc-dot r"></div><div class="acc-text"><strong>Більше 1 години без попередження</strong> — замовлення скасовується, повертаємо повну суму + компенсація 400 ₴</div></div>
+        <div class="acc-note">Якщо водій запізнюється і не виходить на зв'язок — одразу телефонуйте логісту</div>
+      </div></div>
+    </div>
+    <div class="acc-item">
+      <div class="acc-trigger" onclick="this.closest('.acc-item').classList.toggle('open')">
+        <div class="acc-trigger-left"><span class="acc-icon">📸</span><div class="acc-label">Якщо вантаж пошкоджено</div></div>
+        <span class="acc-arrow">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        <div class="acc-row"><div class="acc-dot y"></div><div class="acc-text"><strong>Зробіть фото вантажу</strong> до того як водій почне завантаження — це головний доказ стану речей</div></div>
+        <div class="acc-row"><div class="acc-dot y"></div><div class="acc-text"><strong>Зробіть фото після</strong> розвантаження — одразу, до від'їзду водія</div></div>
+        <div class="acc-row"><div class="acc-dot g"></div><div class="acc-text"><strong>Пошкодження до 500 ₴</strong> — компенсуємо за рахунок водія</div></div>
+        <div class="acc-row"><div class="acc-dot g"></div><div class="acc-text"><strong>Пошкодження 500–3000 ₴</strong> — 50% компенсуємо ми, розглядаємо індивідуально</div></div>
+        <div class="acc-row"><div class="acc-dot g"></div><div class="acc-text"><strong>Більше 3000 ₴</strong> — індивідуальний розгляд з фото-доказами</div></div>
+        <div class="acc-warn">⚠️ Без фото до і після — претензії щодо пошкоджень не розглядаються. Фіксуйте стан речей обов'язково</div>
+      </div></div>
+    </div>
+    <div class="acc-item">
+      <div class="acc-trigger" onclick="this.closest('.acc-item').classList.toggle('open')">
+        <div class="acc-trigger-left"><span class="acc-icon">📋</span><div class="acc-label">Важливо знати</div></div>
+        <span class="acc-arrow">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        <div class="acc-row"><div class="acc-dot gr"></div><div class="acc-text"><strong>Вантаж під вашу відповідальність.</strong> Якщо ви самостійно пакуєте речі — за пошкодження через неправильне пакування ми не несемо відповідальності</div></div>
+        <div class="acc-row"><div class="acc-dot gr"></div><div class="acc-text"><strong>Будьте присутні на місці.</strong> Клієнт або довірена особа має бути під час завантаження і розвантаження</div></div>
+        <div class="acc-row"><div class="acc-dot gr"></div><div class="acc-text"><strong>Оплата — тільки через сервіс.</strong> Якщо водій просить оплатити готівкою напряму — відмовляйте і повідомте нам</div></div>
+        <div class="acc-row"><div class="acc-dot gr"></div><div class="acc-text"><strong>Заборонені вантажі.</strong> Зброя, вибухові речовини, заборонені хімічні речовини — до перевезення не приймаються</div></div>
+        <div class="acc-row"><div class="acc-dot gr"></div><div class="acc-text"><strong>Якщо щось пішло не так</strong> — не з'ясовуйте стосунки з водієм напряму, телефонуйте логісту. Ми вирішимо</div></div>
+        <div class="acc-note">Телефон логіста: <a href="tel:+380665179774" style="color:var(--blk);font-weight:700">+38 (066) 517-97-74</a> · Щодня 8:00–19:00</div>
+      </div></div>
+    </div>
+  </div>
+
+<div class="pay-section">
+    <div class="total-row">
+      <div class="total-label">До сплати</div>
+      <div class="total-val" id="d-total">—</div>
+    </div>
+    <button class="btn-pay" id="copy-card-btn">💳 Скопіювати номер картки</button>
+    <div class="card-hint">
+      <span class="card-num">5168 7451 3289 4343</span><br>
+      Відкрийте свій банківський додаток, вставте номер і переведіть суму
+    </div>
+  </div>
+
+  <footer>
+    <div class="ft-logo">Bu<em>ss</em>y</div>
+    <div style="text-align:right">
+      <div class="ft-hint">Є питання?</div>
+      <a href="tel:+380665179774" class="ft-phone">+38 (066) 517-97-74</a>
+    </div>
+  </footer>
+</div>
+
+<!-- TRACKING SECTION (client: loading/driving/unloading) -->
+<div id="tracking-section" style="display:none">
+  <div class="card" style="margin-top:12px;overflow:visible;padding:16px 18px">
+    <div class="section-head" style="padding:0 0 10px"><span class="section-head-icon">📍</span><div class="section-head-title">Хід поїздки</div></div>
+    <div class="tl">
+      <div class="tl-item" id="tl-loading">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-label">Завантаження</div><div class="tl-time" id="tt-loading"></div></div>
+      </div>
+      <div class="tl-item" id="tl-driving">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-label">В дорозі</div><div class="tl-time" id="tt-driving"></div></div>
+      </div>
+      <div class="tl-item" id="tl-unloading">
+        <div class="tl-left"><div class="tl-dot"></div></div>
+        <div class="tl-content"><div class="tl-label">Розвантаження</div><div class="tl-time" id="tt-unloading"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-wrap" id="map-wrap">
+    <div class="map-lbl">🗺 Водій на карті</div>
+    <div id="map"></div>
+  </div>
+</div>
+
+<!-- DONE SECTION (client after finish) -->
+<div id="done-section" style="display:none">
+  <div class="thanks-hero">
+    <div class="thanks-ico">✅</div>
+    <div class="thanks-ttl">Дякуємо, що скористалися сервісом вантажоперевезень Bussy!</div>
+    <div class="thanks-sub">Ваше замовлення виконано. Будемо раді бачити вас знову</div>
+  </div>
+
+  <div class="card" style="margin-top:12px;padding:16px 18px">
+    <div class="section-head" style="padding:0 0 10px"><span class="section-head-icon">⏱</span><div class="section-head-title">Підсумок поїздки</div></div>
+    <div class="sum-grid">
+      <div class="sum-item"><div class="sum-lbl">Завантаження</div><div class="sum-val" id="sum-loading">—</div></div>
+      <div class="sum-item"><div class="sum-lbl">Поїздка</div><div class="sum-val" id="sum-trip">—</div></div>
+      <div class="sum-item"><div class="sum-lbl">Розвантаження</div><div class="sum-val" id="sum-unload">—</div></div>
+      <div class="sum-item sum-total"><div class="sum-lbl">Загальний час</div><div class="sum-val" id="sum-total">—</div></div>
+    </div>
+  </div>
+
+  <!-- REVIEW -->
+  <div class="card" style="margin-top:12px;padding:16px 18px">
+    <div class="section-head" style="padding:0 0 10px"><span class="section-head-icon"></span><div class="section-head-title">Оцініть роботу водія</div></div>
+    <div class="stars-row">
+      <div id="stars1"><span class="star" onclick="setStar(1,1)">★</span><span class="star" onclick="setStar(1,2)">★</span><span class="star" onclick="setStar(1,3)">★</span><span class="star" onclick="setStar(1,4)">★</span><span class="star" onclick="setStar(1,5)">★</span></div>
+      <div class="star-lbl" id="sl1"></div>
+    </div>
+    <div class="sent-badge" id="sb1">✓ Збережено</div>
+  </div>
+  <div class="card" style="margin-top:12px;padding:16px 18px">
+    <div class="section-head" style="padding:0 0 10px"><span class="section-head-icon"></span><div class="section-head-title">Оцініть сервіс Bussy</div></div>
+    <div class="stars-row">
+      <div id="stars2"><span class="star" onclick="setStar(2,1)">★</span><span class="star" onclick="setStar(2,2)">★</span><span class="star" onclick="setStar(2,3)">★</span><span class="star" onclick="setStar(2,4)">★</span><span class="star" onclick="setStar(2,5)">★</span></div>
+      <div class="star-lbl" id="sl2"></div>
+    </div>
+    <div class="sent-badge" id="sb2">✓ Збережено</div>
+  </div>
+
+  <div class="action-btns">
+    <button class="btn-promo" onclick="openPromo()">🎁 Ваша знижка на наступне замовлення <span>›</span></button>
+    <button class="btn-share" onclick="openShare()">📤 Порадити друзям <span>›</span></button>
+  </div>
+
+  <footer>
+    <div class="ft-logo">Bu<em>ss</em>y</div>
+    <div style="text-align:right">
+      <div class="ft-hint">Є питання?</div>
+      <a href="tel:+380665179774" class="ft-phone">+38 (066) 517-97-74</a>
+    </div>
+  </footer>
+</div>
+
+<!-- DRIVER SECTION -->
+<div id="driver-section" style="display:none">
+  <div class="timer-box" id="timer-box">
+    <div class="timer-lbl" id="timer-lbl">Час завантаження</div>
+    <div class="timer-val" id="timer-val">00:00</div>
+  </div>
+  <button id="btn-loading" class="drv-btn btn-y" onclick="driverAction('loading')">Завантаження</button>
+  <button id="btn-driving" class="drv-btn btn-dk" onclick="driverAction('driving')">Початок поїздки</button>
+  <button id="btn-unloading" class="drv-btn btn-y" onclick="driverAction('unloading')">Розвантаження</button>
+  <button id="btn-done" class="drv-btn btn-rd" onclick="driverAction('done')">Завершити поїздку</button>
+</div>
+
+<!-- PHOTO (driver) -->
+<div id="photo-card" style="display:none">
+  <div class="card" style="margin-top:12px;padding:16px 18px">
+    <div class="section-head" style="padding:0 0 10px"><span class="section-head-icon">📷</span><div class="section-head-title">Фото після поїздки</div></div>
+    <label class="photo-drop" for="photo-input">
+      <div style="font-size:32px;margin-bottom:6px">📷</div>
+      <div style="font-size:13px;color:var(--t2)">Натисни щоб вибрати фото з галереї<br>або зробити нове (можна кілька)</div>
+    </label>
+    <div class="photo-count" id="photo-count"></div>
+    <input type="file" id="photo-input" accept="image/*" multiple style="display:none">
+    <button class="photo-submit" id="photo-submit" onclick="handlePhoto()">Завантажити і завершити</button>
+  </div>
+</div>
+
+<!-- DRIVER SUMMARY (after done) -->
+<div id="driver-sum-card" style="display:none">
+  <div class="card" style="margin-top:12px;padding:16px 18px">
+    <div class="section-head" style="padding:0 0 10px"><span class="section-head-icon">⏱</span><div class="section-head-title">Підсумок поїздки</div></div>
+    <div class="sum-grid">
+      <div class="sum-item"><div class="sum-lbl">Завантаження</div><div class="sum-val" id="ds-loading">—</div></div>
+      <div class="sum-item"><div class="sum-lbl">Поїздка</div><div class="sum-val" id="ds-trip">—</div></div>
+      <div class="sum-item"><div class="sum-lbl">Розвантаження</div><div class="sum-val" id="ds-unload">—</div></div>
+      <div class="sum-item sum-total"><div class="sum-lbl">Загальний час</div><div class="sum-val" id="ds-total">—</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN SECTION -->
+<div id="admin-section" style="display:none">
+  <div class="card" style="margin-top:12px;padding:16px 18px">
+    <div class="section-head" style="padding:0 0 10px"><span class="section-head-icon">📍</span><div class="section-head-title">Хід поїздки</div></div>
+    <div class="tl">
+      <div class="tl-item" id="tl-loading">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-label">Завантаження</div><div class="tl-time" id="tt-loading"></div></div>
+      </div>
+      <div class="tl-item" id="tl-driving">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-label">В дорозі</div><div class="tl-time" id="tt-driving"></div></div>
+      </div>
+      <div class="tl-item" id="tl-unloading">
+        <div class="tl-left"><div class="tl-dot"></div></div>
+        <div class="tl-content"><div class="tl-label">Розвантаження</div><div class="tl-time" id="tt-unloading"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="map-wrap" id="map-wrap" style="display:block">
+    <div class="map-lbl">🗺 Водій на карті</div>
+    <div id="map"></div>
+  </div>
+  <div class="card" id="summary-card-admin" style="display:none;margin-top:12px;padding:16px 18px">
+    <div class="section-head" style="padding:0 0 10px"><span class="section-head-icon">⏱</span><div class="section-head-title">Підсумок поїздки</div></div>
+    <div class="sum-grid">
+      <div class="sum-item"><div class="sum-lbl">Завантаження</div><div class="sum-val" id="sa-loading">—</div></div>
+      <div class="sum-item"><div class="sum-lbl">Поїздка</div><div class="sum-val" id="sa-trip">—</div></div>
+      <div class="sum-item"><div class="sum-lbl">Розвантаження</div><div class="sum-val" id="sa-unload">—</div></div>
+      <div class="sum-item sum-total"><div class="sum-lbl">Загальний час</div><div class="sum-val" id="sa-total">—</div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:12px;padding:16px 18px">
+    <div class="section-head" style="padding:0 0 10px"><span>🔗</span><div class="section-head-title">Посилання поїздки</div></div>
+    <div class="al-item" onclick="copyAdminLink('client')">
+      <div><div class="al-role">Клієнт</div><div class="al-url" id="url-client"></div></div>
+      <span style="color:var(--y);font-size:18px">⧉</span>
+    </div>
+    <div class="al-item" onclick="copyAdminLink('driver')">
+      <div><div class="al-role">Водій</div><div class="al-url" id="url-driver"></div></div>
+      <span style="color:var(--y);font-size:18px">⧉</span>
+    </div>
+  </div>
+</div>
+
+<!-- POPUPS -->
+<div class="overlay" id="promoOverlay" onclick="closeOverlay('promoOverlay')">
+  <div class="popup" onclick="event.stopPropagation()">
+    <div class="popup-drag"></div>
+    <div class="popup-ico">🎁</div>
+    <div class="popup-ttl">Ваша знижка 8%</div>
+    <div class="popup-sub">На наступне замовлення Bussy.<br>Дійсна 60 днів. Назвіть код логісту при замовленні.</div>
+    <div class="promo-box"><div class="promo-code">BUSSY8</div><button class="promo-btn" onclick="copyPromo()">Скопіювати</button></div>
+    <div class="promo-note">Знижка поширюється на базову вартість замовлення</div>
+    <button class="popup-close" onclick="closeOverlay('promoOverlay')">Закрити</button>
+  </div>
+</div>
+<div class="overlay" id="shareOverlay" onclick="closeOverlay('shareOverlay')">
+  <div class="popup" onclick="event.stopPropagation()">
+    <div class="popup-drag"></div>
+    <div class="popup-ico">📤</div>
+    <div class="popup-ttl">Порадити Bussy друзям</div>
+    <div class="popup-sub">Поділіться посиланням — друзі отримають той самий якісний сервіс</div>
+    <div class="share-options">
+      <button class="share-opt" onclick="shareTo('telegram')"><span class="share-opt-ico">✈️</span><div><div class="share-opt-text">Telegram</div><div class="share-opt-sub">Надіслати посилання у Telegram</div></div></button>
+      <button class="share-opt" onclick="shareTo('viber')"><span class="share-opt-ico">💬</span><div><div class="share-opt-text">Viber</div><div class="share-opt-sub">Надіслати посилання у Viber</div></div></button>
+      <button class="share-opt" onclick="shareTo('copy')"><span class="share-opt-ico">🔗</span><div><div class="share-opt-text">Скопіювати посилання</div><div class="share-opt-sub">Вставити в будь-який месенджер</div></div></button>
+    </div>
+    <button class="popup-close" onclick="closeOverlay('shareOverlay')">Закрити</button>
+  </div>
+</div>
+
+<div class="copied-toast" id="toast"></div>
+</body>
+</html>
