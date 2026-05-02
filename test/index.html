@@ -986,33 +986,52 @@ async function calcRoute(){
   if(!S.fromPlace||!S.toPlace)return;
   document.getElementById('sn2').classList.add('done');
   const t2=document.getElementById('st2');t2.textContent='→';t2.classList.add('vis');
-  const dirSvc=new google.maps.DirectionsService();
-  const wp=S.hasStop&&S.stopPlace?[{location:new google.maps.LatLng(S.stopPlace.lat,S.stopPlace.lng),stopover:true}]:[];
-  // Рахуємо маршрут через DirectionsService (враховує зупинку)
-  dirSvc.route({
-    origin:new google.maps.LatLng(S.fromPlace.lat,S.fromPlace.lng),
-    destination:new google.maps.LatLng(S.toPlace.lat,S.toPlace.lng),
-    waypoints:wp,travelMode:'DRIVING'
-  },(res,stat)=>{
-    if(stat==='OK'){
-      // Сумуємо відстань і час по всіх legs
-      let totalDist=0,totalDur=0;
-      res.routes[0].legs.forEach(leg=>{totalDist+=leg.distance.value;totalDur+=leg.duration.value;});
-      S.distKm=Math.round(totalDist/1000);
-      S.durationMinRaw=Math.round(totalDur/60);
-      updateDistBadge();
-    }
-    // Холостий хід Соборна→А
-    const svc=new google.maps.DistanceMatrixService();
-    svc.getDistanceMatrix({
-      origins:[new google.maps.LatLng(SOBIRNA.lat,SOBIRNA.lng)],
-      destinations:[new google.maps.LatLng(S.fromPlace.lat,S.fromPlace.lng)],
-      travelMode:'DRIVING'
-    },(r2,s2)=>{
-      if(s2==='OK'&&r2.rows[0].elements[0].status==='OK')
-        S.deadKm=Math.round(r2.rows[0].elements[0].distance.value/1000);
-      calcPrice();
+
+  const dmSvc=new google.maps.DistanceMatrixService();
+
+  // 1. Відстань і час А→Б (через зупинку якщо є)
+  const origins=[new google.maps.LatLng(S.fromPlace.lat,S.fromPlace.lng)];
+  const destinations=[new google.maps.LatLng(S.toPlace.lat,S.toPlace.lng)];
+
+  if(S.hasStop&&S.stopPlace){
+    // З зупинкою: рахуємо А→зупинка + зупинка→Б
+    dmSvc.getDistanceMatrix({origins,destinations:[new google.maps.LatLng(S.stopPlace.lat,S.stopPlace.lng)],travelMode:'DRIVING'},(r1,s1)=>{
+      dmSvc.getDistanceMatrix({origins:[new google.maps.LatLng(S.stopPlace.lat,S.stopPlace.lng)],destinations,travelMode:'DRIVING'},(r2,s2)=>{
+        if(s1==='OK'&&s2==='OK'){
+          const e1=r1.rows[0].elements[0],e2=r2.rows[0].elements[0];
+          if(e1.status==='OK'&&e2.status==='OK'){
+            S.distKm=Math.round((e1.distance.value+e2.distance.value)/1000);
+            S.durationMinRaw=Math.round((e1.duration.value+e2.duration.value)/60);
+            updateDistBadge();
+          }
+        }
+        calcDeadKm();
+      });
     });
+  } else {
+    // Без зупинки: А→Б напряму
+    dmSvc.getDistanceMatrix({origins,destinations,travelMode:'DRIVING'},(res,stat)=>{
+      if(stat==='OK'&&res.rows[0].elements[0].status==='OK'){
+        const el=res.rows[0].elements[0];
+        S.distKm=Math.round(el.distance.value/1000);
+        S.durationMinRaw=Math.round(el.duration.value/60);
+        updateDistBadge();
+      }
+      calcDeadKm();
+    });
+  }
+}
+
+function calcDeadKm(){
+  const dmSvc=new google.maps.DistanceMatrixService();
+  dmSvc.getDistanceMatrix({
+    origins:[new google.maps.LatLng(SOBIRNA.lat,SOBIRNA.lng)],
+    destinations:[new google.maps.LatLng(S.fromPlace.lat,S.fromPlace.lng)],
+    travelMode:'DRIVING'
+  },(r,s)=>{
+    if(s==='OK'&&r.rows[0].elements[0].status==='OK')
+      S.deadKm=Math.round(r.rows[0].elements[0].distance.value/1000);
+    calcPrice();
   });
 }
 function updateDistBadge(){
