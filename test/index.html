@@ -726,43 +726,9 @@ const SHEET_URL='https://script.google.com/macros/s/AKfycbxMfSiQwdMTI0M0A-scrwrW
 const TG_TOKEN='8782277242:AAH6fNfjqO9M5PbbrdGTqA_PlkynXaJJEsg';
 const TG_CHAT_ID='438820953';
 
-// ── ORDER NUMBER ──
-function getOrderNum(){
-  const key='bussy_order_counter';
-  let n=parseInt(localStorage.getItem(key)||'0')+1;
-  localStorage.setItem(key,n);
-  return '№'+String(n).padStart(7,'0');
-}
 
-// ── TELEGRAM ──
-async function sendTelegram(payload,orderNum){
-  const utm=getUTM();
-  const lines=[
-    '🚛 *Нове замовлення Bussy!*',
-    '*'+orderNum+'*',
-    '',
-    '👤 '+payload.name+' · '+payload.phone,
-    '📦 '+payload.services,
-    '🛣️ '+payload.from+' → '+payload.to+(payload.distance!=='—'?' ('+payload.distance+')':''),
-    payload.extras!=='—'?'➕ '+payload.extras:'',
-    '📅 '+payload.date+(payload.time!=='—'?', '+payload.time:''),
-    '💰 *'+payload.total+'*',
-    utm?'\n📊 '+utm:'',
-  ].filter(Boolean).join('\n');
-  try{
-    await fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({chat_id:TG_CHAT_ID,text:lines,parse_mode:'Markdown'})
-    });
-  }catch(e){}
-}
 
-function getUTM(){
-  const p=new URLSearchParams(window.location.search);
-  const parts=[];
-  ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'].forEach(k=>{if(p.get(k)) parts.push(k+'='+p.get(k));});
-  return parts.join(' | ');
-}
+// старий sendTelegram видалено — використовується sendTelegramNew
 
 // ── ТАРИФИ ──
 const SOBIRNA={lat:49.2333,lng:28.4682};
