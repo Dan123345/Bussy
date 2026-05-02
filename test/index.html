@@ -1014,15 +1014,6 @@ async function calcRoute(){
       calcPrice();
     });
   });
-  document.getElementById('mapWrap').style.display='block';
-  const dirSvc=new google.maps.DirectionsService();
-  const wp=S.hasStop&&S.stopPlace?[{location:new google.maps.LatLng(S.stopPlace.lat,S.stopPlace.lng),stopover:true}]:[];
-  dirSvc.route({origin:new google.maps.LatLng(S.fromPlace.lat,S.fromPlace.lng),destination:new google.maps.LatLng(S.toPlace.lat,S.toPlace.lng),waypoints:wp,travelMode:'DRIVING'},(res,stat)=>{if(stat==='OK')dirRenderer.setDirections(res);});
-  [markerFrom,markerTo,markerStop].forEach(m=>{if(m)m.setMap(null);});
-  const mk=(pos,fill,stroke)=>new google.maps.Marker({position:pos,map,icon:{path:google.maps.SymbolPath.CIRCLE,scale:7,fillColor:fill,fillOpacity:1,strokeColor:stroke,strokeWeight:2}});
-  markerFrom=mk({lat:S.fromPlace.lat,lng:S.fromPlace.lng},'#0f0f0f','#fff');
-  markerTo=mk({lat:S.toPlace.lat,lng:S.toPlace.lng},'#ffc900','#0f0f0f');
-  if(S.hasStop&&S.stopPlace)markerStop=mk({lat:S.stopPlace.lat,lng:S.stopPlace.lng},'#888','#fff');
 }
 function updateDistBadge(){
   const coeff=trafficCoeff(S.selTime);
