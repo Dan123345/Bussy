@@ -537,7 +537,7 @@ footer{background:var(--blk);color:#fff;margin:10px 12px 24px;border-radius:var(
         </div>
       </div>
       <div class="dist-badge" id="distBadge">
-        🛣️ <span class="dist-km" id="distKm">—</span> км · <span id="distPrice">—</span> ₴ за маршрут
+        🛣️ <span class="dist-km" id="distKm">—</span> км · <span id="distPrice">—</span>
       </div>
       <button class="add-stop-btn" id="addStopBtn" onclick="addStop()">＋ Додати зупинку</button>
       <button class="swap-btn" onclick="swapRoute()">⇅ Поміняти адреси</button>
@@ -1020,18 +1020,24 @@ async function calcRoute(){
   if(!S.fromPlace||!S.toPlace)return;
   document.getElementById('sn2').classList.add('done');
   const t2=document.getElementById('st2');t2.textContent='→';t2.classList.add('vis');
-  const svc=new google.maps.DistanceMatrixService();
-  svc.getDistanceMatrix({
-    origins:[new google.maps.LatLng(S.fromPlace.lat,S.fromPlace.lng)],
-    destinations:[new google.maps.LatLng(S.toPlace.lat,S.toPlace.lng)],
-    travelMode:'DRIVING'
+  const dirSvc=new google.maps.DirectionsService();
+  const wp=S.hasStop&&S.stopPlace?[{location:new google.maps.LatLng(S.stopPlace.lat,S.stopPlace.lng),stopover:true}]:[];
+  // Рахуємо маршрут через DirectionsService (враховує зупинку)
+  dirSvc.route({
+    origin:new google.maps.LatLng(S.fromPlace.lat,S.fromPlace.lng),
+    destination:new google.maps.LatLng(S.toPlace.lat,S.toPlace.lng),
+    waypoints:wp,travelMode:'DRIVING'
   },(res,stat)=>{
-    if(stat==='OK'&&res.rows[0].elements[0].status==='OK'){
-      const el=res.rows[0].elements[0];
-      S.distKm=Math.round(el.distance.value/1000);
-      S.durationMinRaw=Math.round(el.duration.value/60);
+    if(stat==='OK'){
+      // Сумуємо відстань і час по всіх legs
+      let totalDist=0,totalDur=0;
+      res.routes[0].legs.forEach(leg=>{totalDist+=leg.distance.value;totalDur+=leg.duration.value;});
+      S.distKm=Math.round(totalDist/1000);
+      S.durationMinRaw=Math.round(totalDur/60);
       updateDistBadge();
     }
+    // Холостий хід Соборна→А
+    const svc=new google.maps.DistanceMatrixService();
     svc.getDistanceMatrix({
       origins:[new google.maps.LatLng(SOBIRNA.lat,SOBIRNA.lng)],
       destinations:[new google.maps.LatLng(S.fromPlace.lat,S.fromPlace.lng)],
@@ -1059,7 +1065,7 @@ function updateDistBadge(){
   const tripKm=T?((!S.isOutFrom&&!S.isOutTo)?T.tripKmCity:T.tripKmOut):0;
   const tripPrice=S.distKm*tripKm*((!S.isOutFrom&&S.isOutTo)?2:1);
   document.getElementById('distKm').textContent=S.distKm;
-  document.getElementById('distPrice').textContent=tripPrice>0?tripPrice.toLocaleString('uk-UA')+' ₴ за маршрут':'—';
+  document.getElementById('distPrice').textContent=tripPrice>0?tripPrice.toLocaleString('uk-UA')+' ₴':'—';
   document.getElementById('distBadge').classList.add('vis');
 }
 function swapRoute(){
@@ -1221,6 +1227,94 @@ function buildTime(){
 // ── ORDER ──
 function getOrderNum(){const key='bussy_order_counter';let n=parseInt(localStorage.getItem(key)||'0')+1;localStorage.setItem(key,n);return '№'+String(n).padStart(7,'0');}
 function getUTM(){const p=new URLSearchParams(window.location.search);const parts=[];['utm_source','utm_medium','utm_campaign','utm_term','utm_content'].forEach(k=>{if(p.get(k))parts.push(k+'='+p.get(k));});return parts.join(' | ');}
+
+// ── SUBMIT ──
+async function submitOrder(){
+  let ok=true;
+  ['nameInp','phoneInp'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el.value.trim()){el.classList.add('err');ok=false;}
+    else el.classList.remove('err');
+  });
+  if(!ok) return;
+  const btn=document.getElementById('submitBtn');
+  btn.classList.add('btn-loading');btn.disabled=true;
+  const orderNum=getOrderNum();
+  const extLblStr=Object.values(S.extLbl).join(', ')||'';
+  const payload={
+    orderNum,
+    name:document.getElementById('nameInp').value.trim(),
+    phone:document.getElementById('phoneInp').value.trim(),
+    service:S.svcLabel||'—',
+    from:S.fromPlace?.name||document.getElementById('fromIn').value||'—',
+    stop:S.stopPlace?.name||'',
+    to:S.toPlace?.name||document.getElementById('toIn').value||'—',
+    dist:S.distKm||'',
+    extras:extLblStr,
+    date:S.selDate||'—',
+    time:S.selTime||'',
+    total:S._total.toLocaleString('uk-UA')+' ₴',
+    utm:getUTM()||''
+  };
+  try{
+    await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  }catch(e){}
+  await sendTelegramNew(payload,orderNum);
+  if(typeof gtag!=='undefined') gtag('event','order_submitted',{service:payload.service,total:payload.total});
+  btn.classList.remove('btn-loading');btn.disabled=false;
+  showPopup(payload,orderNum);
+}
+
+async function sendTelegramNew(payload,orderNum){
+  const coeff=trafficCoeff(S.selTime);
+  const peakNote=coeff>1.1?'⚡ Година пік (×'+coeff+')':'';
+  const lines=[
+    '🚛 *Нове замовлення Bussy!*','*'+orderNum+'*','',
+    '━━━ КЛІЄНТ ━━━',
+    '👤 '+payload.name+' · '+payload.phone,
+    '📦 Послуга: '+payload.service,
+    '🛣️ Звідки: '+payload.from,
+    payload.stop?'📍 Зупинка: '+payload.stop:'',
+    '🏁 Куди: '+payload.to,
+    payload.dist?'📏 Відстань: '+payload.dist+' км':'',
+    payload.extras?'➕ '+payload.extras:'',
+    '📅 '+payload.date+(payload.time?', '+payload.time:''),
+    '💰 *Сума клієнта: '+payload.total+'*',
+    '',
+    '━━━ ВНУТРІШНЄ ━━━',
+    '🚗 Водій отримує: '+S._driverPay.toLocaleString('uk-UA')+' ₴',
+    '⏱ Час поїздки: ~'+S._durationMin+' хв',
+    peakNote,
+    payload.utm?'📊 '+payload.utm:'',
+  ].filter(Boolean).join('\n');
+  try{
+    await fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:TG_CHAT_ID,text:lines,parse_mode:'Markdown'})
+    });
+  }catch(e){}
+}
+
+function showPopup(p,orderNum){
+  document.getElementById('popupOrderNum').textContent=orderNum;
+  document.getElementById('popupTotal').textContent=p.total;
+  let h='';
+  if(p.service&&p.service!=='—') h+='<div class="popup-det-row"><span>Послуга</span><span>'+p.service+'</span></div>';
+  if(p.from&&p.from!=='—') h+='<div class="popup-det-row"><span>Звідки</span><span>'+p.from+'</span></div>';
+  if(p.stop) h+='<div class="popup-det-row"><span>Зупинка</span><span>'+p.stop+'</span></div>';
+  if(p.to&&p.to!=='—') h+='<div class="popup-det-row"><span>Куди</span><span>'+p.to+'</span></div>';
+  if(p.dist) h+='<div class="popup-det-row"><span>Відстань</span><span>'+p.dist+' км</span></div>';
+  if(p.extras) h+='<div class="popup-det-row"><span>Додатково</span><span>'+p.extras+'</span></div>';
+  if(p.date&&p.date!=='—') h+='<div class="popup-det-row"><span>Дата</span><span>'+p.date+(p.time?', '+p.time:'')+'</span></div>';
+  document.getElementById('popupRows').innerHTML=h;
+  document.getElementById('popup').classList.add('open');
+}
+function closePopup(){
+  document.getElementById('popup').classList.remove('open');
+  document.getElementById('nameInp').value='';
+  document.getElementById('phoneInp').value='';
+}
+
 buildTime();
 renderStrip(true);
 
